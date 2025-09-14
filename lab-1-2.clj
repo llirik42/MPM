@@ -6,8 +6,10 @@
             [string-list char acc]
             (if (> (count string-list) 0)
               (if (= char (str (first (first string-list))))
-                (_add-single-character (rest string-list) char acc)
-                (_add-single-character (rest string-list) char (cons (.concat (str char) (first string-list)) acc)))
+                (recur (rest string-list) char acc)
+                (let [acc-delta (.concat (str char) (first string-list))
+                      new-acc (cons acc-delta acc)]
+                  (recur (rest string-list) char new-acc)))
               acc))]
 
     (letfn [(add-single-character
@@ -18,7 +20,9 @@
       (letfn [(_add-multiple-characters
                 [string-list chars acc]
                 (if (> (count chars) 0)
-                  (_add-multiple-characters string-list (rest chars) (concat acc (add-single-character string-list (first chars))))
+                  (let [acc-delta (add-single-character string-list (first chars))
+                        new-acc (concat acc acc-delta)]
+                    (recur string-list (rest chars) new-acc))
                   acc))]
 
         (letfn [(add-multiple-characters
@@ -30,7 +34,8 @@
                     [length chars acc]
                     {:pre [(> length 0)]}
                     (if (> length 1)
-                      (_get-all-sequences (dec length) chars (add-multiple-characters acc chars))
+                      (let [new-acc (add-multiple-characters acc chars)]
+                        (recur (dec length) chars new-acc))
                       acc))]
 
             (letfn [(get-all-sequences
