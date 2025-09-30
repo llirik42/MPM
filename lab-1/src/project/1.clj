@@ -1,3 +1,5 @@
+(ns project.1)
+
 (let [n 3
       cs `("a" "b" "c" "d")]
   ; Function takes character and list of strings. Returns: list of strings with given character inserted at the beginning if first character of strings didn't equal it

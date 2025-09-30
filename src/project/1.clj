@@ -1,8 +1,4 @@
-;; (ns project.1
-;; ;;   (:require [incanter.charts :as charts]
-;; ;;              [incanter.core :as core]
-;; ;;              [incanter.stats :as stats])
-;;   )
+
 (def h 1)
 
 (defn const [x] 1)

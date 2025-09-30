@@ -1,3 +1,5 @@
+(ns project.3)
+
 (letfn [(my-map
           [f coll]
           (reduce
