@@ -1,9 +1,5 @@
 (ns integration.memo
-  (:require [integration.utils :as utils]
-            ;;   [incanter.charts :as charts]
-            ;;    [incanter.core :as core]
-            ;;    [incanter.stats :as stats]
-            ))
+  (:require [integration.utils :as utils]))
 
 (def antiderivative
   (memoize (fn [f h]
@@ -22,26 +18,29 @@
                (let [memo (memoize integral-k)]
                  (fn [x]
                    (let [k (Math/round (double (/ x h)))]
-                   ((partial memo memo) k))))))))
+                     ((partial memo memo) k))))))))
 
-;; (let [i (antiderivative quadratic 1)]
-;;   (println i)
-;;   (time (i 200))
-;;   (time (i 200))
-;;   (time (i 201))
-;;   (time (i 202))
-;;   (println "_________________"))
+(let [i (antiderivative utils/quadratic 1)]
+  (println i)
+  (time (i 200))
+  (time (i 200))
+  (time (i 201))
+  (time (i 202))
+  (println "_________________"))
 
-;; (let [i (antiderivative utils/quadratic 1)]
-;;   (println i)
-;;   (println (i 1))
-;;   (println (i 2))
-;;   (println (i 3))
-;;   (println (i 4))
-;;   (println "_________________"))
+(let [i (antiderivative utils/quadratic 1)]
+  (println i)
+  (time (i 200))
+  (time (i 200))
+  (time (i 201))
+  (time (i 202))
+  (println "_________________"))
 
-;; (let [i (antiderivative utils/quadratic 1)]
-;;   (time (i -198)) 
-;;   (time (i -199))
-;;     (time (i -200))
-;;   (println "_________________"))
+
+(let [i (antiderivative utils/quadratic 1)]
+  (println i)
+  (time (i 200))
+  (time (i 200))
+  (time (i 201))
+  (time (i 202))
+  (println "_________________"))
