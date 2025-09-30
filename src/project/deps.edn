@@ -1,0 +1,3 @@
+{:deps {org.clojure/clojure {:mvn/version "1.12.1"}
+        incanter/incanter   {:mvn/version "1.9.3"
+                             :exclusions [bouncycastle/bctsp-jdk14]}}}
