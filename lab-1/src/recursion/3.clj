@@ -1,4 +1,4 @@
-(ns project.3)
+(ns recursion.3)
 
 (letfn [(my-map
           [f coll]

@@ -1,4 +1,4 @@
-(ns project.1)
+(ns recursion.1)
 
 (let [n 3
       cs `("a" "b" "c" "d")]
