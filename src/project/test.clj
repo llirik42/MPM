@@ -1,18 +1,17 @@
-(defn make-fibo [y]
-  (let [fib
-    (fn [mem-fib x]
-      (let [fib2 (fn [a] (mem-fib mem-fib a))]
-        (if (<= x 2)
-          y
-          (+ (fib2 (- x 1)) (fib2 (- x 2))))))
-    mem-fib (memoize fib)]
+(defn fib []
+  (letfn [(slow-fib [f n] (if (<= n 1)
+                            n
+                            (+ (f f (- n 1)) (f f (- n 2)))))]
+    (let [memoized-fib (memoize slow-fib)]
+      (fn [n] ((partial memoized-fib memoized-fib) n)))))
 
-    (partial mem-fib mem-fib)))
-
-(time ((make-fibo 1) 90))
-(time ((make-fibo 1) 90))
-(time ((make-fibo 1) 90))
-(time ((make-fibo 1) 90))
-(time ((make-fibo 1) 90))
-(time ((make-fibo 1) 90))
-(time ((make-fibo 1) 90))
+(let [memoized-fib (memoize fib)]
+  (time ((memoized-fib) 40))
+  (time ((memoized-fib) 84))
+  (time ((memoized-fib) 85))
+  (time ((memoized-fib) 86))
+  (time ((memoized-fib) 87))
+  (time ((memoized-fib) 88))
+  (time ((memoized-fib) 89))
+  (time ((memoized-fib) 90))
+  (time ((memoized-fib) 91)))
