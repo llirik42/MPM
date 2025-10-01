@@ -17,8 +17,8 @@
                  (fn [x]
                    (let [k (Math/abs (Math/round (double (/ x h))))]
                      (first (rest (if (> x 0)
-                       (nth positive-seq k)
-                       (nth negative-seq k)))))))))))
+                                    (nth positive-seq k)
+                                    (nth negative-seq k)))))))))))
 
 (let [i (antiderivative utils/quadratic 1)]
   (println i)
@@ -35,7 +35,6 @@
   (time (i 201))
   (time (i 202))
   (println "_________________"))
-
 
 (let [i (antiderivative utils/const 1)]
   (println i)
