@@ -1,10 +1,14 @@
 (ns integration.tests
   (:require [clojure.test :refer [deftest is run-tests]]
             [integration.utils :as utils]
-            [integration.memo :as memo]))
+            [integration.memo :as memo]
+            [integration.lazy :as lazy]))
 
 (deftest test-const
-  (let [ad (memo/antiderivative utils/const 0.5)]
+  (let [f utils/const
+        h 0.5
+        ad-memo (memo/antiderivative f h)
+        ad-lazy (lazy/antiderivative f h)]
     (doseq [[x expected] [[0 0]
                           [0.1 0]
                           [0.4 0.5]
@@ -23,10 +27,14 @@
                           [-1 -1]
                           [-2 -2]
                           [-50 -50]]]
-      (is (= (double expected) (double (ad x)))))))
+      (is (= (double expected) (double (ad-memo x))))
+      (is (= (double expected) (double (ad-lazy x)))))))
 
 (deftest test-linear
-  (let [ad (memo/antiderivative utils/linear 0.5)]
+  (let [f utils/linear
+        h 0.5
+        ad-memo (memo/antiderivative f h)
+        ad-lazy (lazy/antiderivative f h)]
     (doseq [[x expected] [[0 0]
                           [0.1 0]
                           [0.4 0.25]
@@ -57,6 +65,7 @@
                           [-13.75 182.25]
                           [-25 625]
                           [-50 2500]]]
-      (is (= (double expected) (double (ad x)))))))
+      (is (= (double expected) (double (ad-memo x))))
+      (is (= (double expected) (double (ad-lazy x)))))))
 
 (run-tests 'integration.tests)
