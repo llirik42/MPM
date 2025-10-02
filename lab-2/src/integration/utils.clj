@@ -6,4 +6,4 @@
 
 (defn quadratic [x] (* 3 x x))
 
-(defn complex [x] (* (Math/sin x) (Math/sin x)))
+(defn complex [x] (if (== x 0) 0 (Math/sin (/ 1 x))))

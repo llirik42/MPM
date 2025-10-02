@@ -1,5 +1,4 @@
-(ns integration.memo
-  (:require [integration.utils :as utils]))
+(ns integration.memo)
 
 (def antiderivative
   (memoize (fn [f h]
@@ -19,28 +18,3 @@
                  (fn [x]
                    (let [k (Math/round (double (/ x h)))]
                      ((partial memo memo) k))))))))
-
-(let [i (antiderivative utils/quadratic 1)]
-  (println i)
-  (time (i 200))
-  (time (i 200))
-  (time (i 201))
-  (time (i 202))
-  (println "_________________"))
-
-(let [i (antiderivative utils/quadratic 1)]
-  (println i)
-  (time (i 200))
-  (time (i 200))
-  (time (i 201))
-  (time (i 202))
-  (println "_________________"))
-
-
-(let [i (antiderivative utils/linear 1)]
-  (println i)
-  (time (i 200))
-  (time (i 200))
-  (time (i 201))
-  (time (i 202))
-  (println "_________________"))

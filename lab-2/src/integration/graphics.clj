@@ -6,8 +6,8 @@
             [incanter.core :as core]))
 
 (let [f utils/complex
-      h 0.01
-      a -10
-      b 10]
+      h 0.0001
+      a -0.1
+      b 0.1]
   (core/view (charts/function-plot (lazy/antiderivative f h) a b))
   (core/view (charts/function-plot (memo/antiderivative f h) a b)))

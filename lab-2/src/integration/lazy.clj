@@ -1,5 +1,4 @@
-(ns integration.lazy
-  (:require [integration.utils :as utils]))
+(ns integration.lazy)
 
 (def antiderivative
   (memoize (fn [f h]
@@ -19,27 +18,3 @@
                      (first (rest (if (> x 0)
                                     (nth positive-seq k)
                                     (nth negative-seq k)))))))))))
-
-(let [i (antiderivative utils/quadratic 1)]
-  (println i)
-  (time (i 200))
-  (time (i 200))
-  (time (i 201))
-  (time (i 202))
-  (println "_________________"))
-
-(let [i (antiderivative utils/quadratic 1)]
-  (println i)
-  (time (i 200))
-  (time (i 200))
-  (time (i 201))
-  (time (i 202))
-  (println "_________________"))
-
-(let [i (antiderivative utils/const 1)]
-  (println i)
-  (time (i -200))
-  (time (i -200))
-  (time (i -201))
-  (time (i -202))
-  (println "_________________"))
