@@ -1,34 +1,25 @@
-(ns filtering.eager
-(:require [criterium.core :as criterium]))
+(ns filtering.eager)
 
-(def cpu-n (.availableProcessors (Runtime/getRuntime)))
+partition
 
 (defn -partition
-  ([n coll acc]
-   (if (= 0 (count coll))
-     acc
-     (let [delta (take n coll)
-           new-acc (concat acc (list delta))]
-       (recur n (drop n coll) new-acc))))
-  ([n coll] (-partition n coll (list))))
+  ([n coll]
+   (lazy-seq
+    (when-let [_ (seq coll)]
+      (cons (take n coll) (-partition n (drop n coll)))))))
+
+(def naturals
+  (lazy-seq
+   (cons 1 (map inc naturals)))) 
+
+;; (defn pfilter
+;;   ([pred coll block-size]
+;;    ())
+;;   ([pred coll] (pfilter pred coll 32)))
 
 
-(defn parallel-filter
-  [pred coll]
-  (let [block-size (int (Math/ceil (/ (count coll) cpu-n)))]
-    (->> coll
-         (-partition block-size)
-         (map #(future (filter pred %)))
-         (doall)
-         (map deref)
-         (reduce concat `()))))
-;; (->> (range 100)
-;;      (filter #(= 0 (mod % 2)))
-;;      (map #(* % %))
-;;      (take 10))
-
-(criterium/quick-bench (dorun (parallel-filter even? (range 10000000))))
-(criterium/quick-bench (dorun (filter even? (range 10000000))))
-
-
-;; (println (-partition 5 (range 1001)))
+(println (nth (-partition 32 naturals) 0))
+(println (nth (-partition 32 naturals) 1))
+(println (nth (-partition 32 naturals) 2))
+(println (nth (-partition 32 naturals) 3))
+(println (nth (-partition 32 naturals) 4))
