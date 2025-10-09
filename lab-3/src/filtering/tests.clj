@@ -1,7 +1,7 @@
 (ns filtering.tests
   (:require [clojure.test :refer [deftest is run-tests]]
             [filtering.impl :refer [pfilter]]
-            [filtering.utils :refer [naturals]]))
+            [filtering.utils :refer [naturals heavy-pred]]))
 
 (deftest test-range
   (doseq [[pred max-range] [[even? 1]
@@ -33,3 +33,9 @@
         (is (= lib-nth impl-nth))))))
 
 (run-tests 'filtering.tests)
+
+(println "\n--------------TESTING-OF-TIME--------------")
+(let [r (range 16)
+      block-size 1]
+  (time (doall (pfilter heavy-pred r block-size)))
+  (time (doall (filter heavy-pred r))))
