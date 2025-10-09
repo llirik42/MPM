@@ -35,7 +35,7 @@
 (run-tests 'filtering.tests)
 
 (println "\n--------------TESTING-OF-TIME--------------")
-(let [r (range 16384)
+(let [r (range 1024)
       block-size 1]
   (time (doall (pfilter heavy-pred r block-size)))
   (time (doall (filter heavy-pred r))))
