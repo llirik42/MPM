@@ -8,5 +8,5 @@
    (cons 1 (map inc naturals))))
 
 (defn heavy-pred [_]
-  (Thread/sleep 100)
+  (Thread/sleep 1)
   true)
