@@ -1,5 +1,7 @@
 (ns dnf.core.core)
 
+(declare repr)
+
 (defn -integer-to-boolean
   [i]
   {:pre [(int? i)]}
@@ -38,9 +40,12 @@
   [v]
   (second v))
 
-(defn -variable-repr [v] (name (variable-name v)))
+(defn -variable-repr
+  [v]
+  (name (variable-name v)))
 
-(defn args [expr]
+(defn args
+  [expr]
   (rest expr))
 
 (defn lneg
@@ -52,8 +57,8 @@
   (= (first expr) ::neg))
 
 (defn -lneg-repr
-  [lneg-expr]
-  (str "¬"))
+  [expr]
+  (str "¬" (repr (first (args expr)))))
 
 (defn land
   [expr & other]
@@ -63,7 +68,12 @@
   [expr]
   (= (first expr) ::and))
 
-(defn -land-repr [expr] "land")
+(defn -land-repr
+  [expr]
+  (let [args (args expr)
+        reprs (map repr args)
+        f (fn [r1 r2] (str r1 " & " r2))]
+    (str "(" (reduce f reprs) ")")))
 
 (defn lor
   [expr & other]
@@ -73,7 +83,12 @@
   [expr]
   (= (first expr) ::or))
 
-(defn -lor-repr [expr] "lor")
+(defn -lor-repr
+  [expr]
+  (let [args (args expr)
+        reprs (map repr args)
+        f (fn [r1 r2] (str r1 " v " r2))]
+    (str "(" (reduce f reprs) ")")))
 
 (defn limpl
   [e1 e2]
@@ -83,7 +98,11 @@
   [expr]
   (= (first expr) ::impl))
 
-(defn -limpl-repr [expr] "limpl")
+(defn -limpl-repr [expr]
+  (let [args (args expr)
+        a1 (first args)
+        a2 (second args)]
+    (str "(" (repr a1) " → " (repr a2) ")")))
 
 (defn repr [expr]
   (cond (const? expr) (-const-repr expr)

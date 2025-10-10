@@ -95,4 +95,35 @@
       (is (not (p l2)))
       (is (not (p l3))))))
 
+(deftest test-repr
+  (let [c0 (const 0)
+        c1 (const 1)
+        v1 (variable ::A)
+        v2 (variable ::B)
+        land1 (land c0 c1 v1)
+        lor1 (lor v1 v2 c1)
+        neg1 (lneg c0)
+        neg2 (lneg v1)
+        neg3 (lneg land1)
+        neg4 (lneg lor1)
+        impl1 (limpl c0 v1)
+        impl2 (limpl land1 v1)
+        impl3 (limpl c0 lor1)
+        complex (land lor1 neg1 neg4 impl1 (lor neg2 neg3))] 
+    (doseq [[e r] [[c0 "0"]
+                   [c1 "1"]
+                   [v1 "A"]
+                   [v2 "B"]
+                   [land1 "(0 & 1 & A)"]
+                   [lor1 "(A v B v 1)"]
+                   [neg1 "¬0"]
+                   [neg2 "¬A"]
+                   [neg3 "¬(0 & 1 & A)"]
+                   [neg4 "¬(A v B v 1)"]
+                   [impl1 "(0 → A)"]
+                   [impl2 "((0 & 1 & A) → A)"]
+                   [impl3 "(0 → (A v B v 1))"]
+                   [complex "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]]] 
+      (is (= r (repr e))))))
+
 (run-tests 'dnf.core.tests)
