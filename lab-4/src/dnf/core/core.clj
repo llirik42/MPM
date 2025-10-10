@@ -1,4 +1,4 @@
-(ns dnf.core)
+(ns dnf.core.core)
 
 (defn -integer-to-boolean
   [i]
