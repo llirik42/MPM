@@ -15,6 +15,10 @@
     (is (= false (const-value c2)))
     (is (= true (const-value c3)))
     (is (= true (const-value c4)))
+    (is (= "0" (const-repr c1)))
+    (is (= "0" (const-repr c2)))
+    (is (= "1" (const-repr c3)))
+    (is (= "1" (const-repr c4)))
     (doseq [p [variable? lneg? land? lor? limpl?]]
       (is (not (p c1)))
       (is (not (p c2)))
@@ -28,6 +32,8 @@
     (is (variable? v2))
     (is (= ::A (variable-name v1)))
     (is (= ::B (variable-name v2)))
+    (is (= "A" (variable-repr v1)))
+    (is (= "B" (variable-repr v2)))
     (doseq [p [const? lneg? land? lor? limpl?]]
       (is (not (p v1)))
       (is (not (p v2))))))

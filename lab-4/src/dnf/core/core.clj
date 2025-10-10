@@ -21,6 +21,10 @@
   [c]
   (second c))
 
+(defn const-repr
+  [c]
+  (if (const-value c) "1" "0"))
+
 (defn variable
   [name]
   {:pre [(keyword? name)]}
@@ -33,6 +37,8 @@
 (defn variable-name
   [v]
   (second v))
+
+(defn variable-repr [v] (name (variable-name v)))
 
 (defn lneg
   [expr]
