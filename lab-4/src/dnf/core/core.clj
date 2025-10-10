@@ -21,7 +21,7 @@
   [c]
   (second c))
 
-(defn const-repr
+(defn -const-repr
   [c]
   (if (const-value c) "1" "0"))
 
@@ -38,7 +38,10 @@
   [v]
   (second v))
 
-(defn variable-repr [v] (name (variable-name v)))
+(defn -variable-repr [v] (name (variable-name v)))
+
+(defn args [expr]
+  (rest expr))
 
 (defn lneg
   [expr]
@@ -48,6 +51,10 @@
   [expr]
   (= (first expr) ::neg))
 
+(defn -lneg-repr
+  [lneg-expr]
+  (str "¬"))
+
 (defn land
   [expr & other]
   (cons ::and (cons expr other)))
@@ -55,6 +62,8 @@
 (defn land?
   [expr]
   (= (first expr) ::and))
+
+(defn -land-repr [expr] "land")
 
 (defn lor
   [expr & other]
@@ -64,6 +73,8 @@
   [expr]
   (= (first expr) ::or))
 
+(defn -lor-repr [expr] "lor")
+
 (defn limpl
   [e1 e2]
   (list ::impl e1 e2))
@@ -72,5 +83,12 @@
   [expr]
   (= (first expr) ::impl))
 
-(defn args [expr]
-  (rest expr))
+(defn -limpl-repr [expr] "limpl")
+
+(defn repr [expr]
+  (cond (const? expr) (-const-repr expr)
+        (variable? expr) (-variable-repr expr)
+        (lneg? expr) (-lneg-repr expr)
+        (land? expr) (-land-repr expr)
+        (lor? expr) (-lor-repr expr)
+        (limpl? expr) (-limpl-repr expr)))
