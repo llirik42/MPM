@@ -26,10 +26,6 @@
   [v]
   (second v))
 
-(defn args
-  [expr]
-  (rest expr))
-
 (defn lneg
   [expr]
   (list ::neg expr))
@@ -61,3 +57,11 @@
 (defn limpl?
   [expr]
   (= (first expr) ::impl))
+
+(defn args
+  [expr]
+  (rest expr))
+
+(defn first-arg
+  [expr]
+  (first (rest expr)))

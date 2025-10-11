@@ -2,7 +2,8 @@
   (:require [clojure.test :refer [deftest is run-tests]]
             [logic.core :refer :all]
             [logic.repr :refer [repr]]
-            [logic.value :refer [value]]))
+            [logic.value :refer [value]]
+            [logic.dnf :refer [dnf]]))
 
 (deftest test-constants
   (let [c1 (const 0)
@@ -17,11 +18,11 @@
     (is (= false (const-value c2)))
     (is (= true (const-value c3)))
     (is (= true (const-value c4)))
-    (doseq [p [variable? lneg? land? lor? limpl?]]
-      (is (not (p c1)))
-      (is (not (p c2)))
-      (is (not (p c3)))
-      (is (not (p c4))))))
+    (doseq [pred [variable? lneg? land? lor? limpl?]]
+      (is (not (pred c1)))
+      (is (not (pred c2)))
+      (is (not (pred c3)))
+      (is (not (pred c4))))))
 
 (deftest test-variables
   (let [v1 (variable ::A)
@@ -30,9 +31,9 @@
     (is (variable? v2))
     (is (= ::A (variable-name v1)))
     (is (= ::B (variable-name v2)))
-    (doseq [p [const? lneg? land? lor? limpl?]]
-      (is (not (p v1)))
-      (is (not (p v2))))))
+    (doseq [pred [const? lneg? land? lor? limpl?]]
+      (is (not (pred v1)))
+      (is (not (pred v2))))))
 
 (deftest test-lneg
   (let [c (const 1)
@@ -42,9 +43,9 @@
     (is (lneg? l2))
     (is (= (list c) (args l1)))
     (is (= (list l1) (args l2)))
-    (doseq [p [const? variable? land? lor? limpl?]]
-      (is (not (p l1)))
-      (is (not (p l2))))))
+    (doseq [pred [const? variable? land? lor? limpl?]]
+      (is (not (pred l1)))
+      (is (not (pred l2))))))
 
 (deftest test-land
   (let [c (const 1)
@@ -58,10 +59,10 @@
     (is (= (list c v) (args l1)))
     (is (= (list v c) (args l2)))
     (is (= (list c v l1 l2) (args l3)))
-    (doseq [p [const? variable? lneg? lor? limpl?]]
-      (is (not (p l1)))
-      (is (not (p l2)))
-      (is (not (p l3))))))
+    (doseq [pred [const? variable? lneg? lor? limpl?]]
+      (is (not (pred l1)))
+      (is (not (pred l2)))
+      (is (not (pred l3))))))
 
 (deftest test-lor
   (let [c (const 0)
@@ -75,10 +76,10 @@
     (is (= (list c v) (args l1)))
     (is (= (list v c) (args l2)))
     (is (= (list l1 l2 v c) (args l3)))
-    (doseq [p [const? variable? lneg? land? limpl?]]
-      (is (not (p l1)))
-      (is (not (p l2)))
-      (is (not (p l3))))))
+    (doseq [pred [const? variable? lneg? land? limpl?]]
+      (is (not (pred l1)))
+      (is (not (pred l2)))
+      (is (not (pred l3))))))
 
 (deftest test-limpl
   (let [c (const 0)
@@ -92,10 +93,10 @@
     (is (= (list c v) (args l1)))
     (is (= (list v c) (args l2)))
     (is (= (list l1 l2) (args l3)))
-    (doseq [p [const? variable? lneg? land? lor?]]
-      (is (not (p l1)))
-      (is (not (p l2)))
-      (is (not (p l3))))))
+    (doseq [pred [const? variable? lneg? land? lor?]]
+      (is (not (pred l1)))
+      (is (not (pred l2)))
+      (is (not (pred l3))))))
 
 (deftest test-repr
   (let [c0 (const 0)
@@ -112,47 +113,66 @@
         impl2 (limpl land1 v1)
         impl3 (limpl c0 lor1)
         complex (land lor1 neg1 neg4 impl1 (lor neg2 neg3))]
-    (doseq [[e r] [[c0 "0"]
-                   [c1 "1"]
-                   [v1 "A"]
-                   [v2 "B"]
-                   [land1 "(0 & 1 & A)"]
-                   [lor1 "(A v B v 1)"]
-                   [neg1 "¬0"]
-                   [neg2 "¬A"]
-                   [neg3 "¬(0 & 1 & A)"]
-                   [neg4 "¬(A v B v 1)"]
-                   [impl1 "(0 → A)"]
-                   [impl2 "((0 & 1 & A) → A)"]
-                   [impl3 "(0 → (A v B v 1))"]
-                   [complex "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]]]
-      (is (= r (repr e))))))
+    (doseq [[expr expr-repr] [[c0 "0"]
+                              [c1 "1"]
+                              [v1 "A"]
+                              [v2 "B"]
+                              [land1 "(0 & 1 & A)"]
+                              [lor1 "(A v B v 1)"]
+                              [neg1 "¬0"]
+                              [neg2 "¬A"]
+                              [neg3 "¬(0 & 1 & A)"]
+                              [neg4 "¬(A v B v 1)"]
+                              [impl1 "(0 → A)"]
+                              [impl2 "((0 & 1 & A) → A)"]
+                              [impl3 "(0 → (A v B v 1))"]
+                              [complex "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]
+                              [(lor (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C))) "(¬A v ¬B v ¬C)"]]]
+      (is (= expr-repr (repr expr))))))
 
 (deftest test-value
   (let [t (const 1)
         f (const 0)
         ctx {:a 1, :b 0, :c true, :d false}]
-    (doseq [[e r] [[t true]
-                   [f false]
-                   [(variable :a) true]
-                   [(variable :b) false]
-                   [(variable :c) true]
-                   [(variable :d) false]
-                   [(lneg t) false]
-                   [(lneg f) true]
-                   [(land f f) false]
-                   [(land f t) false]
-                   [(land t f) false]
-                   [(land t t) true]
-                   [(lor f f) false]
-                   [(lor f t) true]
-                   [(lor t f) true]
-                   [(lor t t) true]
-                   [(limpl f f) true]
-                   [(limpl f t) true]
-                   [(limpl t f) false]
-                   [(limpl t t) true]
-                   ]]
-      (is (= r (value e ctx))))))
+    (doseq [[expr expr-value] [[t true]
+                               [f false]
+                               [(variable :a) true]
+                               [(variable :b) false]
+                               [(variable :c) true]
+                               [(variable :d) false]
+                               [(lneg t) false]
+                               [(lneg f) true]
+                               [(land f f) false]
+                               [(land f t) false]
+                               [(land t f) false]
+                               [(land t t) true]
+                               [(lor f f) false]
+                               [(lor f t) true]
+                               [(lor t f) true]
+                               [(lor t t) true]
+                               [(limpl f f) true]
+                               [(limpl f t) true]
+                               [(limpl t f) false]
+                               [(limpl t t) true]]]
+      (is (= expr-value (value expr ctx))))))
+
+(deftest test-dnf
+  (doseq [[expr expr-dnf] [[(const 0) (const 0)] ; 0
+                           [(const 1) (const 1)] ; 1
+                           [(variable ::A) (variable ::A)] ; A
+                           [(lneg (const 0)) (const 1)] ; ¬0 ~ 1
+                           [(lneg (const 1)) (const 0)] ; ¬1 ~ 0
+                           [(lneg (variable ::A)) (lneg (variable ::A))] ; ¬A ~ ¬A 
+                           [(lneg (lneg (variable ::A))) (variable ::A)] ; ¬¬A ~ A
+                           [(lneg (lneg (lneg (variable ::A)))) (lneg (variable ::A))] ; ¬¬¬A ~ ¬A
+                           [(lneg (land (variable ::A) (variable ::B) (variable ::C))) (lor (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C)))] ; ¬(A & B & C) ~ ¬A v ¬B v ¬C
+                           [(lneg (land (lneg (variable ::A)) (lneg (variable ::B)))) (lor (variable ::A) (variable ::B))] ; ¬(¬A & ¬B) ~ A v B
+                           [(lneg (lor (variable ::A) (variable ::B) (variable ::C))) (land (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C)))] ; ¬(A v B v C) ~ ¬A & ¬B & ¬C
+                           [(lneg (lor (lneg (variable ::A)) (lneg (variable ::B)))) (land (variable ::A) (variable ::B))] ; ¬(¬A v ¬B) ~ A & B
+
+
+                           
+                           ]]
+    (is (= expr-dnf (dnf expr)))))
 
 (run-tests 'logic.tests)
