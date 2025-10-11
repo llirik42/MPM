@@ -1,6 +1,7 @@
-(ns dnf.core.tests
+(ns logic.tests
   (:require [clojure.test :refer [deftest is run-tests]]
-            [dnf.core.core :refer :all]))
+            [logic.core :refer :all]
+            [logic.repr :refer :all]))
 
 (deftest test-constants
   (let [c1 (const 0)
@@ -33,7 +34,7 @@
       (is (not (p v2))))))
 
 (deftest test-lneg
-  (let [c (const 1) 
+  (let [c (const 1)
         l1 (lneg c)
         l2 (lneg l1)]
     (is (lneg? l1))
@@ -52,9 +53,9 @@
         l3 (land c v l1 l2)]
     (is (land? l1))
     (is (land? l2))
-    (is (land? l3)) 
+    (is (land? l3))
     (is (= (list c v) (args l1)))
-    (is (= (list v c) (args l2))) 
+    (is (= (list v c) (args l2)))
     (is (= (list c v l1 l2) (args l3)))
     (doseq [p [const? variable? lneg? lor? limpl?]]
       (is (not (p l1)))
@@ -109,7 +110,7 @@
         impl1 (limpl c0 v1)
         impl2 (limpl land1 v1)
         impl3 (limpl c0 lor1)
-        complex (land lor1 neg1 neg4 impl1 (lor neg2 neg3))] 
+        complex (land lor1 neg1 neg4 impl1 (lor neg2 neg3))]
     (doseq [[e r] [[c0 "0"]
                    [c1 "1"]
                    [v1 "A"]
@@ -123,7 +124,7 @@
                    [impl1 "(0 → A)"]
                    [impl2 "((0 & 1 & A) → A)"]
                    [impl3 "(0 → (A v B v 1))"]
-                   [complex "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]]] 
+                   [complex "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]]]
       (is (= r (repr e))))))
 
-(run-tests 'dnf.core.tests)
+(run-tests 'logic.tests)
