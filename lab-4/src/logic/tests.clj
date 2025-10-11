@@ -1,7 +1,8 @@
 (ns logic.tests
   (:require [clojure.test :refer [deftest is run-tests]]
             [logic.core :refer :all]
-            [logic.repr :refer :all]))
+            [logic.repr :refer [repr]]
+            [logic.value :refer [value]]))
 
 (deftest test-constants
   (let [c1 (const 0)
@@ -126,5 +127,32 @@
                    [impl3 "(0 → (A v B v 1))"]
                    [complex "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]]]
       (is (= r (repr e))))))
+
+(deftest test-value
+  (let [t (const 1)
+        f (const 0)
+        ctx {:a 1, :b 0, :c true, :d false}]
+    (doseq [[e r] [[t true]
+                   [f false]
+                   [(variable :a) true]
+                   [(variable :b) false]
+                   [(variable :c) true]
+                   [(variable :d) false]
+                   [(lneg t) false]
+                   [(lneg f) true]
+                   [(land f f) false]
+                   [(land f t) false]
+                   [(land t f) false]
+                   [(land t t) true]
+                   [(lor f f) false]
+                   [(lor f t) true]
+                   [(lor t f) true]
+                   [(lor t t) true]
+                   [(limpl f f) true]
+                   [(limpl f t) true]
+                   [(limpl t f) false]
+                   [(limpl t t) true]
+                   ]]
+      (is (= r (value e ctx))))))
 
 (run-tests 'logic.tests)

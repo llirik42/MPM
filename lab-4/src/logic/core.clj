@@ -1,17 +1,9 @@
-(ns logic.core)
-
-(defn -integer-to-boolean
-  [i]
-  {:pre [(int? i)]}
-  (if (== i 0) false true))
+(ns logic.core
+  (:require [logic.utils :refer [int-bool-to-bool]]))
 
 (defn const
   [value]
-  {:pre [(or (boolean? value) (int? value))]}
-  (let [v (if (int? value)
-            (-integer-to-boolean value)
-            value)]
-    (list ::const v)))
+  (list ::const (int-bool-to-bool value)))
 
 (defn const?
   [expr]
