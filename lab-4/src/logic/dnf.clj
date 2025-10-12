@@ -21,14 +21,26 @@
    [(fn [expr] (and (lneg? expr) (land? (first-arg expr)))); Отрицание И (закон Де-моргана)
     (fn [expr] (let [and-args (args (first-arg expr))
                      mapped-and-args (map #(dnf (lneg %)) and-args)]
-                 (apply lor mapped-and-args)))] ; Закон Де-моргана
+                 (dnf (apply lor mapped-and-args))))] ; Закон Де-моргана
    [(fn [expr] (and (lneg? expr) (lor? (first-arg expr)))); Отрицание ИЛИ (закон Де-моргана)
     (fn [expr] (let [or-args (args (first-arg expr))
                      mapped-or-args (map #(dnf (lneg %)) or-args)]
-                 (apply land mapped-or-args)))] ; Закон Де-моргана
-   
-   
-   ))
+                 (dnf (apply land mapped-or-args))))] ; Закон Де-моргана
+   [(fn [expr] (and (lneg? expr) (limpl? (first-arg expr)))); Отрицание импликации
+    (fn [expr] (let [arg (first-arg expr)] ; arg is implication
+                 (dnf (lneg (dnf arg)))))]
+   [land?; И
+    (fn [expr] expr)]
+
+   [lor?; ИЛИ
+    (fn [expr] expr)]
+
+   [limpl?; Импликация
+    (fn [expr] (let [a1 (first-arg expr)
+                     a2 (second-arg expr)
+                     dnf-neg-a1 (dnf (lneg a1))
+                     dnf-a2 (dnf a2)]
+                 (dnf (lor dnf-neg-a1 dnf-a2))))]))
 
 (defn dnf [expr]
   ((some

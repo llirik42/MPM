@@ -169,9 +169,8 @@
                            [(lneg (land (lneg (variable ::A)) (lneg (variable ::B)))) (lor (variable ::A) (variable ::B))] ; ¬(¬A & ¬B) ~ A v B
                            [(lneg (lor (variable ::A) (variable ::B) (variable ::C))) (land (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C)))] ; ¬(A v B v C) ~ ¬A & ¬B & ¬C
                            [(lneg (lor (lneg (variable ::A)) (lneg (variable ::B)))) (land (variable ::A) (variable ::B))] ; ¬(¬A v ¬B) ~ A & B
-
-
-                           
+                           [(limpl (variable ::A) (variable ::B)) (lor (lneg (variable ::A)) (variable ::B))] ; A → B ~ ¬A v B
+                           [(lneg (limpl (variable ::A) (variable ::B))) (land (variable ::A) (lneg (variable ::B)))] ; ¬(A → B) ~ A & ¬B
                            ]]
     (is (= expr-dnf (dnf expr)))))
 

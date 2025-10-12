@@ -65,3 +65,7 @@
 (defn first-arg
   [expr]
   (first (rest expr)))
+
+(defn second-arg
+  [expr]
+  (second (rest expr)))
