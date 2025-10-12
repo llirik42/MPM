@@ -1,6 +1,18 @@
 (ns logic.core
   (:require [logic.utils :refer [int-bool-to-bool]]))
 
+(defn args
+  [expr]
+  (rest expr))
+
+(defn first-arg
+  [expr]
+  (first (rest expr)))
+
+(defn second-arg
+  [expr]
+  (second (rest expr)))
+
 (defn const
   [value]
   (list ::const (int-bool-to-bool value)))
@@ -58,14 +70,9 @@
   [expr]
   (= (first expr) ::impl))
 
-(defn args
+(defn limpl-to-lor
   [expr]
-  (rest expr))
+  (let [f (first-arg expr)
+        s (second-arg expr)]
+    (lor (lneg f) s)))
 
-(defn first-arg
-  [expr]
-  (first (rest expr)))
-
-(defn second-arg
-  [expr]
-  (second (rest expr)))

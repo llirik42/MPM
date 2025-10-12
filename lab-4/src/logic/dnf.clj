@@ -51,3 +51,10 @@
     -dnf-rules)
    expr))
 
+(let [a (variable ::A)
+      b (variable ::B)
+      c (variable ::C)
+      d (variable ::D)
+      v (land a b)]
+  (println (repr v))
+  (println (repr (dnf v))))

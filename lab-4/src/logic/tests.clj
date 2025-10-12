@@ -157,21 +157,49 @@
       (is (= expr-value (value expr ctx))))))
 
 (deftest test-dnf
-  (doseq [[expr expr-dnf] [[(const 0) (const 0)] ; 0
-                           [(const 1) (const 1)] ; 1
-                           [(variable ::A) (variable ::A)] ; A
-                           [(lneg (const 0)) (const 1)] ; ¬0 ~ 1
-                           [(lneg (const 1)) (const 0)] ; ¬1 ~ 0
-                           [(lneg (variable ::A)) (lneg (variable ::A))] ; ¬A ~ ¬A 
-                           [(lneg (lneg (variable ::A))) (variable ::A)] ; ¬¬A ~ A
-                           [(lneg (lneg (lneg (variable ::A)))) (lneg (variable ::A))] ; ¬¬¬A ~ ¬A
-                           [(lneg (land (variable ::A) (variable ::B) (variable ::C))) (lor (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C)))] ; ¬(A & B & C) ~ ¬A v ¬B v ¬C
-                           [(lneg (land (lneg (variable ::A)) (lneg (variable ::B)))) (lor (variable ::A) (variable ::B))] ; ¬(¬A & ¬B) ~ A v B
-                           [(lneg (lor (variable ::A) (variable ::B) (variable ::C))) (land (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C)))] ; ¬(A v B v C) ~ ¬A & ¬B & ¬C
-                           [(lneg (lor (lneg (variable ::A)) (lneg (variable ::B)))) (land (variable ::A) (variable ::B))] ; ¬(¬A v ¬B) ~ A & B
-                           [(limpl (variable ::A) (variable ::B)) (lor (lneg (variable ::A)) (variable ::B))] ; A → B ~ ¬A v B
-                           [(lneg (limpl (variable ::A) (variable ::B))) (land (variable ::A) (lneg (variable ::B)))] ; ¬(A → B) ~ A & ¬B
+  (let [a (variable ::A)
+        b (variable ::B)
+        c (variable ::C)
+        d (variable ::D)
+        t (const 1)
+        f (const 0)]
+  (doseq [[expr expr-dnf] [[f f] ; 0
+                           [t t] ; 1
+                           [a a] ; A
+                           [(lneg f) t] ; ¬0 ~ 1
+                           [(lneg t) f] ; ¬1 ~ 0
+                           [(lneg a) (lneg a)] ; ¬A ~ ¬A 
+                           [(lneg (lneg a)) a] ; ¬¬A ~ A
+                           [(lneg (lneg (lneg a))) (lneg a)] ; ¬¬¬A ~ ¬A
+                           [(lneg (land a b c)) (lor (lneg a) (lneg b) (lneg c))] ; ¬(A & B & C) ~ ¬A v ¬B v ¬C
+                           [(lneg (land (lneg a) (lneg b))) (lor a b)] ; ¬(¬A & ¬B) ~ A v B
+                           [(lneg (lor a b c)) (land (lneg a) (lneg b) (lneg c))] ; ¬(A v B v C) ~ ¬A & ¬B & ¬C
+                           [(lneg (lor (lneg a) (lneg b))) (land a b)] ; ¬(¬A v ¬B) ~ A & B
+                           [(limpl a b) (lor (lneg a) b)] ; A → B ~ ¬A v B
+                           [(lneg (limpl a b)) (land a (lneg b))] ; ¬(A → B) ~ A & ¬B
+                           ;[(land t t) t] ; 1 & 1 ~ 1
+                           ;[(land t f) f] ; 1 & 0 ~ 0
+                           ;[(land f f) f] ; 0 & 0 ~ 0
+                           ;[(land t t t) t] ; 1 & 1 & 1 ~ 1
+                           ;[(land t t f) f] ; 1 & 1 & 1 ~ 0
+                           ;[(land a a) a] ; A & A ~ A
+                           ;[(land a a a) a] ; A & A & A ~ A
+                           ;[(land a (lneg a)) a] ; A & ¬A ~ 0
+                           ;[(land (lneg a) a) a] ; ¬A & A ~ 0
+                           ;[(land a b (lneg a)) a] ; A & B & ¬A ~ 0
+                           ;[(land (lneg a) b a) a] ; ¬A & B & A ~ 0
+                           ;[(land a (lor b c)) (lor (land a b) (land a c))] ; A & (B v C) ~ (A & B) v (A & C)
+                           ;[(land (lor b c) a) (lor (land a b) (land a c))] ; (B v C) & A ~ (B & A) v (C & A)
+                           ;[(land (lor a b) (lor c d)) (lor (land a c) (land b c) (land a d) (land b d))] ; (A v B) & (C v D) ~ (A & C) v (B & C) v (A & D) v (B & D)
+                           [(lor t t) t] ; 1 v 1 ~ 1
+                           [(lor t f) t] ; 1 v 0 ~ 1
+                           [(lor f f) f] ; 0 v 0 ~ 0
+                           [(lor t f f) t] ; 1 & 0 & 0 ~ 1
+                           ;[limpl (t t) f] ; 1 → 1 ~ 1
+                           ;[limpl (t f) f] ; 1 → 0 ~ 0
+                           ;[limpl (f f) t] ; 0 → 0 ~ 1
+                           ;[limpl (f t) t] ; 0 → 1 ~ 1
                            ]]
-    (is (= expr-dnf (dnf expr)))))
+    (is (= expr-dnf (dnf expr))))))
 
 (run-tests 'logic.tests)
