@@ -180,6 +180,8 @@
                            [(lneg (land a (lor b (lneg c)))) (lor (lneg a) (land (lneg b) c))] ; ¬(A ∧ (B ∨ ¬C)) ~ (¬A v (¬B & C))
                            ;[(land (lor a (land b c)) (lor (lneg a) d)) a] ; (A ∨ (B ∧ C)) ∧ (¬A ∨ D) ~ 
 
+                           [(land (limpl a b) (limpl c d)) (lor (land (lneg a) (lneg c)) (land b (lneg c)) (land (lneg a) d) (land b d))] ; (A → B) ∧ (C → D) ~ (¬A & ¬C) v (¬A & D) v (B & ¬C) v (B & D)
+
 
 
                            ]]
