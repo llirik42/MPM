@@ -139,7 +139,7 @@
       h (variable ::H)
       i (variable ::I)
       v (land a (lor b c) d)
-      v2 (land a b c d (lor e f g))]
+      v2 (land a (lor b (land c d)))]
   ; НЕ РАБОТАЕТ
   (println (repr v2)) 
   (println "----")
