@@ -13,12 +13,17 @@
                  (if value-of-const
                    (let [other-args (remove #(= (const 1) %) args)] ; ; const = true удаляем первый true
                      (simplify (apply land other-args)))
-                   (const 0))))] ; const = false 
+                   (const 0))))] ; const = false
    
-   [land? (fn [expr] expr)] ; Логическое И. Возвращаем без изменений
-
-   [lor?; ИЛИ
-    (fn [expr] expr)]))
+   [(fn [expr] (and (lor expr) (find-first const? (args expr)))); Логическое ИЛИ, в котором есть константы
+    (fn [expr] (let [args (args expr)
+                     value-of-const (const-value (find-first const? args))]
+                 (if value-of-const
+                   (let [other-args (remove #(= (const 0) %) args)] ; ; const = true удаляем первый true
+                     (simplify (apply lor other-args)))
+                   (const 1))))] ; const = true
+   
+   [(fn [expr] true) (fn [expr] expr)])) ; Все остальные случаи
 
 (defn simplify [expr]
   ((some

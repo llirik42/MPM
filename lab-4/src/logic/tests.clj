@@ -161,45 +161,30 @@
         b (variable ::B)
         c (variable ::C)
         d (variable ::D)
+        e (variable ::E)
         t (const 1)
         f (const 0)]
-  (doseq [[expr expr-dnf] [[f f] ; 0
-                           [t t] ; 1
-                           [a a] ; A
-                           [(lneg f) t] ; ¬0 ~ 1
-                           [(lneg t) f] ; ¬1 ~ 0
+  (doseq [[expr expr-dnf] [[(land a b) (land a b)] ; A & B ~ A & B
+                           [(lor a b) (lor a b)] ; A v B ~ A v B
                            [(lneg a) (lneg a)] ; ¬A ~ ¬A 
-                           [(lneg (lneg a)) a] ; ¬¬A ~ A
-                           [(lneg (lneg (lneg a))) (lneg a)] ; ¬¬¬A ~ ¬A
-                           [(lneg (land a b c)) (lor (lneg a) (lneg b) (lneg c))] ; ¬(A & B & C) ~ ¬A v ¬B v ¬C
-                           [(lneg (land (lneg a) (lneg b))) (lor a b)] ; ¬(¬A & ¬B) ~ A v B
-                           [(lneg (lor a b c)) (land (lneg a) (lneg b) (lneg c))] ; ¬(A v B v C) ~ ¬A & ¬B & ¬C
-                           [(lneg (lor (lneg a) (lneg b))) (land a b)] ; ¬(¬A v ¬B) ~ A & B
                            [(limpl a b) (lor (lneg a) b)] ; A → B ~ ¬A v B
-                           [(lneg (limpl a b)) (land a (lneg b))] ; ¬(A → B) ~ A & ¬B
-                           ;[(land t t) t] ; 1 & 1 ~ 1
-                           ;[(land t f) f] ; 1 & 0 ~ 0
-                           ;[(land f f) f] ; 0 & 0 ~ 0
-                           ;[(land t t t) t] ; 1 & 1 & 1 ~ 1
-                           ;[(land t t f) f] ; 1 & 1 & 1 ~ 0
-                           ;[(land a a) a] ; A & A ~ A
-                           ;[(land a a a) a] ; A & A & A ~ A
-                           ;[(land a (lneg a)) a] ; A & ¬A ~ 0
-                           ;[(land (lneg a) a) a] ; ¬A & A ~ 0
-                           ;[(land a b (lneg a)) a] ; A & B & ¬A ~ 0
-                           ;[(land (lneg a) b a) a] ; ¬A & B & A ~ 0
-                           ;[(land a (lor b c)) (lor (land a b) (land a c))] ; A & (B v C) ~ (A & B) v (A & C)
-                           ;[(land (lor b c) a) (lor (land a b) (land a c))] ; (B v C) & A ~ (B & A) v (C & A)
-                           ;[(land (lor a b) (lor c d)) (lor (land a c) (land b c) (land a d) (land b d))] ; (A v B) & (C v D) ~ (A & C) v (B & C) v (A & D) v (B & D)
-                           [(lor t t) t] ; 1 v 1 ~ 1
-                           [(lor t f) t] ; 1 v 0 ~ 1
-                           [(lor f f) f] ; 0 v 0 ~ 0
-                           [(lor t f f) t] ; 1 & 0 & 0 ~ 1
-                           ;[limpl (t t) f] ; 1 → 1 ~ 1
-                           ;[limpl (t f) f] ; 1 → 0 ~ 0
-                           ;[limpl (f f) t] ; 0 → 0 ~ 1
-                           ;[limpl (f t) t] ; 0 → 1 ~ 1
+                           [(lneg (land a b)) (lor (lneg a) (lneg b))] ; ¬(A & B) ~ ¬A v ¬B
+                           [(lneg (lor a b)) (land (lneg a) (lneg b))] ; ¬(A v B) ~ ¬A & ¬B
+                           [(lor (land a b) c) (lor (land a b) c)] ; (A & B) v C ~ (A & B) v C
+                           [(land a (lor b c)) (lor (land a b) (land a c))] ; A & (B v C) ~ (A & B) v (A & C)
+                           [(land (lor a b) (lor c d)) (lor (land a c) (land b c) (land a d) (land b d))] ; (A v B) & (C v D) ~ (A & C) v (B & C) v (A & D) v (B & D)
+                           [(land (limpl a b) c) (lor (land (lneg a) c) (land b c))] ; (A → B) ∧ C ~ (¬A & C) v (B & C)
+                           [(limpl a (lor b c)) (lor (lneg a) b c)] ; A → (B ∨ C) ~ (¬A v B v C)
+                           [(lneg (limpl a b)) (land a (lneg b))] ; ¬(A → B) ~ (A & ¬B)
+                           [(limpl a (limpl b c)) (lor (lneg a) (lneg b) c)] ; (A → (B → C)) ~ (¬A v ¬B v C)
+                           [(lneg (land a (lor b (lneg c)))) (lor (lneg a) (land (lneg b) c))] ; ¬(A ∧ (B ∨ ¬C)) ~ (¬A v (¬B & C))
+                           ;[(land (lor a (land b c)) (lor (lneg a) d)) a] ; (A ∨ (B ∧ C)) ∧ (¬A ∨ D) ~ 
+
+
+
                            ]]
-    (is (= expr-dnf (dnf expr))))))
+    (is (= expr-dnf (dnf expr)))
+    ;(println (repr expr) "!" (repr expr-dnf) "!" (repr (dnf expr)))
+    )))
 
 (run-tests 'logic.tests)

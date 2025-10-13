@@ -64,34 +64,42 @@
                      arg2 (second-arg expr)
                      or-args (args arg2)
                      ands (map #(dnf (land arg1 %)) or-args)]
-                 (apply lor ands)))]
+                 (dnf (apply lor ands))))]
 
    [(fn [expr] (and (== 2 (count (args expr))) (land? expr) (lor? (first-arg expr)))); (B v C v D v ...) & A
     (fn [expr] (let [arg1 (first-arg expr)
                      arg2 (second-arg expr)
                      or-args (args arg1)
                      ands (map #(dnf (land % arg2)) or-args)]
-                 (apply lor ands)))]
+                 (dnf (apply lor ands))))]
 
    [(fn [expr] (and (== 2 (count (args expr))) (land? expr))) ; Конъюнкция от двух аргументов
     (fn [expr] (let [arg1 (dnf (first-arg expr))
                      arg2 (dnf (second-arg expr))
-                     c1 (land? arg1)
-                     c2 (land? arg2)] 
-                 (cond
-                   (and c1 c2) (let [args1 (args arg1)
-                                     args2 (args arg2)]
-                                 (apply land (concat args1 args2)))
-                   
-                   (and c1 (not c2)) (let [args1 (args arg1)
-                                           args2 (list arg2)]
-                                       (apply land (concat args1 args2)))
-
-                   (and (not c1) c2) (let [args1 (list arg1)
-                                           args2 (args arg2)]
-                                       (apply land (concat args1 args2)))
-
-                   (and (not c1) (not c2)) (land arg1 arg2))))]
+                     l1 (land? arg1)
+                     l2 (land? arg2)
+                     changed1 (not (= arg1 (first-arg expr)))
+                     changed2 (not (= arg2 (second-arg expr)))
+                     res (cond
+                           (and l1 l2) (let [args1 (args arg1)
+                                             args2 (args arg2)]
+                                         (apply land (concat args1 args2)))
+                           
+                           (and l1 (not l2)) (let [args1 (args arg1)
+                                                   args2 (list arg2)]
+                                               (apply land (concat args1 args2)))
+                           
+                           (and (not l1) l2) (let [args1 (list arg1)
+                                                   args2 (args arg2)]
+                                               (apply land (concat args1 args2)))
+                           
+                           (and (not l1) (not l2)) (if (or (= (lneg arg1) arg2) (= (lneg arg2) arg1))
+                                                     (const 0)
+                                                     (land arg1 arg2)))]
+                 (if (or changed1 changed2)
+                   (dnf res)
+                   res)
+                 ))]
 
    [land? ; все остальные случаи для конъюнкции
     (fn [expr] (let [args (args expr)
@@ -140,7 +148,4 @@
       i (variable ::I)
       v (land a (lor b c) d)
       v2 (land a (lor b (land c d)))]
-  ; НЕ РАБОТАЕТ
-  (println (repr v2)) 
-  (println "----")
-  (println (repr (dnf v2))))
+  )
