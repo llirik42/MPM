@@ -1,7 +1,8 @@
 (ns logic.dnf
   (:require [logic.core :refer :all])
   (:require [logic.repr :refer :all])
-  (:require [logic.simplification :refer [simplify]]))
+  (:require [logic.simplification :refer [simplify]])
+  (:require [logic.utils :refer [find-first]]))
 
 (declare -dnf)
 
@@ -116,29 +117,14 @@
                      a2 (second-arg expr)]
                  (-dnf (lor (lneg a1) a2))))]))
 
-(defn -dnf [expr]
-  ((some
-                   (fn [rule]
-                     (if ((first rule) expr)
-                       (second rule)
-                       false))
-                   -dnf-rules)
-                  expr))
 
+
+(defn -dnf [expr]
+  (let [rule (find-first #((first %) expr) -dnf-rules)]
+    ((second rule) expr)))
+   
+   
 (defn dnf [expr] 
   (let [expr-dnf (-dnf expr)]
     ;(println (repr expr-dnf))
     (simplify expr-dnf)))
-
-(let [a (variable ::A)
-      b (variable ::B)
-      c (variable ::C)
-      d (variable ::D)
-      e (variable ::E)
-      f (variable ::F)
-      g (variable ::G)
-      h (variable ::H)
-      i (variable ::I)
-      v (land a (lor b c) d)
-      v2 (land a (lor b (land c d)))]
-  )

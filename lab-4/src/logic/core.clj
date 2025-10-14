@@ -1,5 +1,5 @@
 (ns logic.core
-  (:require [logic.utils :refer [int-bool-to-bool]]))
+  (:require [logic.utils :refer [int-or-bool-to-bool]]))
 
 (defn args
   [expr]
@@ -15,7 +15,7 @@
 
 (defn const
   [value]
-  (list ::const (int-bool-to-bool value)))
+  (list ::const (int-or-bool-to-bool value)))
 
 (defn const?
   [expr]
@@ -75,4 +75,3 @@
   (let [f (first-arg expr)
         s (second-arg expr)]
     (lor (lneg f) s)))
-

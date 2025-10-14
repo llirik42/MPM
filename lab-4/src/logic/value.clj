@@ -1,6 +1,6 @@
 (ns logic.value
   (:require [logic.core :refer :all]
-            [logic.utils :refer [int-bool-to-bool]]))
+            [logic.utils :refer [int-or-bool-to-bool find-first]]))
 
 (declare value)
 
@@ -12,7 +12,7 @@
    [variable?
     (fn [expr ctx]
       (let [name (variable-name expr)
-            v (int-bool-to-bool (ctx name))]
+            v (int-or-bool-to-bool (ctx name))]
         (if (nil? v)
           (throw (Exception. (str "Unknown variable " name)))
           v)))]
@@ -38,10 +38,5 @@
         (or (not v1) v2)))]))
 
 (defn value [expr ctx]
-  ((some
-    (fn [rule]
-      (if ((first rule) expr)
-        (second rule)
-        false))
-    -value-rules)
-   expr ctx))
+  (let [rule (find-first #((first %) expr) -value-rules)]
+     ((second rule) expr ctx)))

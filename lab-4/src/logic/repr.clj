@@ -1,5 +1,6 @@
 (ns logic.repr
-  (:require [logic.core :refer :all]))
+  (:require [logic.core :refer :all]
+            [logic.utils :refer [find-first]]))
 
 (declare repr)
 
@@ -31,9 +32,5 @@
         (str "(" (repr a1) " → " (repr a2) ")")))]))
 
 (defn repr [expr]
-  ((some (fn [rule]
-           (if ((first rule) expr)
-             (second rule)
-             false))
-         -repr-rules)
-   expr))
+  (let [rule (find-first #((first %) expr) -repr-rules)]
+    ((second rule) expr)))

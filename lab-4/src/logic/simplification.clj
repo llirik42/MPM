@@ -46,28 +46,9 @@
    [(fn [expr] true) (fn [expr] expr)])) ; Все остальные случаи
 
 (defn -simplify [expr]
-  ((some (fn [rule]
-            (if ((first rule) expr)
-              (second rule)
-              false))
-          -simplification-rules)
-    expr))
+  (let [rule (find-first #((first %) expr) -simplification-rules)]
+     ((second rule) expr)))
 
 (defn simplify [expr] 
-  (println "Before: " (repr expr) "    After: " (repr (-simplify expr)))
+  ;(println "Before: " (repr expr) "    After: " (repr (-simplify expr)))
   (-simplify expr))
-
-(defn -my-func [rest-args]
-  (let [expr-args (args expr)]
-    ))
-
-(defn my-func [expr] (-my-func expr {}))
-
-(let [a (variable ::A)
-      b (variable ::B)
-      c (variable ::C)
-      v (land (a b c))]
-  
-  
-  
-  )
