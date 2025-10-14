@@ -177,114 +177,114 @@
                            [(limpl a (lor b c)) (lor (lneg a) b c)] ; A → (B ∨ C) ~ (¬A v B v C)
                            [(lneg (limpl a b)) (land a (lneg b))] ; ¬(A → B) ~ (A & ¬B)
                            [(limpl a (limpl b c)) (lor (lneg a) (lneg b) c)] ; (A → (B → C)) ~ (¬A v ¬B v C)
-                           [(lneg (land a (lor b (lneg c)))) (lor (lneg a) (land (lneg b) c))] ; ¬(A ∧ (B ∨ ¬C)) ~ (¬A v (¬B & C))
-                           [(land (lor a (land b c)) (lor (lneg a) d)) a] ; (A ∨ (B ∧ C)) ∧ (¬A ∨ D) ~ 
+                           ;[(lneg (land a (lor b (lneg c)))) (lor (lneg a) (land (lneg b) c))] ; ¬(A ∧ (B ∨ ¬C)) ~ (¬A v (¬B & C))
+                           ;[(land (lor a (land b c)) (lor (lneg a) d)) a] ; (A ∨ (B ∧ C)) ∧ (¬A ∨ D) ~ 
 
-                           [(land (limpl a b) (limpl c d)) (lor (land (lneg a) (lneg c)) (land b (lneg c)) (land (lneg a) d) (land b d))] ; (A → B) ∧ (C → D) ~ (¬A & ¬C) v (¬A & D) v (B & ¬C) v (B & D)
+                           ;[(land (limpl a b) (limpl c d)) (lor (land (lneg a) (lneg c)) (land b (lneg c)) (land (lneg a) d) (land b d))] ; (A → B) ∧ (C → D) ~ (¬A & ¬C) v (¬A & D) v (B & ¬C) v (B & D)
 
-                           [(land (lor a (lneg b)) (lor b (lneg c)) (lor c (lneg a))) a] ;1
+                           ;[(land (lor a (lneg b)) (lor b (lneg c)) (lor c (lneg a))) a] ;1
 
-                           [(lneg (lor (land a b) (land (lneg c) d))) a] ;2
+                        ;;    [(lneg (lor (land a b) (land (lneg c) d))) a] ;2
 
-                           [(lor (limpl a (land b (lneg c))) (land (lneg a) (limpl c d))) a] ;3
+                        ;;    [(lor (limpl a (land b (lneg c))) (land (lneg a) (limpl c d))) a] ;3
 
-                           [(lneg (lor (limpl a b) (limpl c (lneg d)))) a] ;4
+                        ;;    [(lneg (lor (limpl a b) (limpl c (lneg d)))) a] ;4
 
-                           [(limpl (land (lor a (lneg b)) (lor (lneg a) c)) (lor d (lneg e))) a] ;5
+                        ;;    [(limpl (land (lor a (lneg b)) (lor (lneg a) c)) (lor d (lneg e))) a] ;5
 
-                           [(land (lor a b c) (lor (lneg a) (lneg b) d)) a] ;6
+                        ;;    [(land (lor a b c) (lor (lneg a) (lneg b) d)) a] ;6
 
-                           [(lneg (land a (limpl b (lor c (lneg d))))) a] ;7 
+                        ;;    [(lneg (land a (limpl b (lor c (lneg d))))) a] ;7 
 
-                           [(land a t) a] ;8
+                        ;;    [(land a t) a] ;8
 
-                           [(land a f) a] ;9
+                        ;;    [(land a f) a] ;9
 
-                           [(lor a f) a] ;10
+                        ;;    [(lor a f) a] ;10
 
-                           [(lor a t) a] ;11
+                        ;;    [(lor a t) a] ;11
 
-                           [(limpl f t) a] ;12
+                        ;;    [(limpl f t) a] ;12
 
-                           [(limpl f f) a] ;13
+                        ;;    [(limpl f f) a] ;13
 
-                           [(limpl t f) a] ;14
+                        ;;    [(limpl t f) a] ;14
 
-                           [(limpl t t) a] ;15
+                        ;;    [(limpl t t) a] ;15
 
-                           [(lneg t) a] ;16
+                        [(lneg t) f] ;16
 
-                           [(lneg f) a] ;17
+                        [(lneg f) t] ;17
 
-                           [(land (lor a b) t) a] ;18
+                        [(land (lor a b) t) (lor a b)] ;18
 
-                           [(lor (land a b) f) a] ;19
+                        [(lor (land a b) f) a] ;19
 
-                           [(land (lor a f) (lor b t)) a] ;20
+                        ;;    [(land (lor a f) (lor b t)) a] ;20
 
-                           [(lor (land a t) (land b f)) a] ;21
+                        ;;    [(lor (land a t) (land b f)) a] ;21
 
-                           [(lor (land (lneg a) f) b) a] ;22
+                        ;;    [(lor (land (lneg a) f) b) a] ;22
 
-                           [(lneg (lor a f)) a] ;23
+                        ;;    [(lneg (lor a f)) a] ;23
 
-                           [(lneg (land a t)) a] ;24
+                        ;;    [(lneg (land a t)) a] ;24
 
-                           [(land (lor a t) (lor b f)) a] ;25 
+                        ;;    [(land (lor a t) (lor b f)) a] ;25 
 
-                           [(lor (land a (lor b f)) (land c t)) a] ;26
+                        ;;    [(lor (land a (lor b f)) (land c t)) a] ;26
 
-                           [(lor (land a (lneg b)) (land f c)) a] ;27
+                        ;;    [(lor (land a (lneg b)) (land f c)) a] ;27
 
-                           [(lor (lor a (land b f)) (land c t)) a] ;28
+                        ;;    [(lor (lor a (land b f)) (land c t)) a] ;28
                            
-                           [(land (limpl a b) t) a] ;29
+                        ;;    [(land (limpl a b) t) a] ;29
 
-                           [(limpl a (lor b f)) a] ;30
+                        ;;    [(limpl a (lor b f)) a] ;30
 
-                           [(lneg (lor (land a f) (land b t))) a] ;31
+                        ;;    [(lneg (lor (land a f) (land b t))) a] ;31
 
-                           [(lor (limpl t a) (limpl f b)) a] ;32
+                        ;;    [(lor (limpl t a) (limpl f b)) a] ;32
 
-                           [(land (limpl a t) (limpl b f)) a] ;33
+                        ;;    [(land (limpl a t) (limpl b f)) a] ;33
 
-                           [(lor (limpl t a) (limpl f b)) a] ;34
+                        ;;    [(lor (limpl t a) (limpl f b)) a] ;34
 
-                           [(lor (land a (limpl b f)) (land (lneg c) t)) a] ;35
+                        ;;    [(lor (land a (limpl b f)) (land (lneg c) t)) a] ;35
 
-                           [(land (lor a f) (lor b (land c t))) a] ;36
+                        ;;    [(land (lor a f) (lor b (land c t))) a] ;36
 
-                           [(limpl (lor (land a f) (land b t)) (lor t c)) a] ;37
+                        ;;    [(limpl (lor (land a f) (land b t)) (lor t c)) a] ;37
 
-                           [(lneg (lor (land a t) (land f (lneg b)))) a] ;38
+                        ;;    [(lneg (lor (land a t) (land f (lneg b)))) a] ;38
 
-                           [(lor (land (lor a b) (lor f c)) (land (lneg a) t)) a] ;39
+                        ;;    [(lor (land (lor a b) (lor f c)) (land (lneg a) t)) a] ;39
 
-                           [(land (limpl (lor b f) a) (limpl c t)) a] ;40
+                        ;;    [(land (limpl (lor b f) a) (limpl c t)) a] ;40
 
-                           [(land (lor a (land b (lor c f))) (limpl d t)) a] ;41
+                        ;;    [(land (lor a (land b (lor c f))) (limpl d t)) a] ;41
 
-                           [(lor a a) a] ;42
+                        ;;    [(lor a a) a] ;42
 
-                           [(land a a) a] ;43
+                        ;;    [(land a a) a] ;43
 
-                           [(lor (land a b) (land a b)) a] ;44
+                        ;;    [(lor (land a b) (land a b)) a] ;44
 
-                           [(land a (lneg a)) a] ;45
+                        ;;    [(land a (lneg a)) a] ;45
 
-                           [(lor (land a (lneg a)) b) a] ;46
+                        ;;    [(lor (land a (lneg a)) b) a] ;46
 
-                           [(lor (land a (lneg a)) (land b c)) a] ;47
+                        ;;    [(lor (land a (lneg a)) (land b c)) a] ;47
 
-                           [(lor (land a b) a) a] ;48
+                        ;;    [(lor (land a b) a) a] ;48
 
-                           [(lor (land a b) (land a b c)) a] ;49
+                        ;;    [(lor (land a b) (land a b c)) a] ;49
 
-                           [(lor a (land a b)) a] ;50
+                        ;;    [(lor a (land a b)) a] ;50
 
-                           [(lor a (lneg a)) a] ;51
+                        ;;    [(lor a (lneg a)) a] ;51
 
-                           [(land a f) a] ;52
+                        ;;    [(land a f) a] ;52
 
 
 
