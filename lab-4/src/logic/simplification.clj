@@ -28,14 +28,16 @@
    [(fn [expr] (and (lor? expr) (find-first const? (args expr)))); Логическое ИЛИ, в котором есть константы
     (fn [expr] (let [args (args expr)
                      value-of-const (const-value (find-first const? args))]
-                 (if value-of-const
+                 (if (not value-of-const)
                    (let [other-args (remove #(= (const 0) %) args)] ; ; const = false удаляем первый false
                      (-simplify (apply lor other-args)))
                    (const 1))))] ; const = true
 
-   [lor? (fn [expr] (let [expr-args (args expr)
+   [lor? (fn [expr] (let [expr-args (args expr) ; Общий случай для логического или
                            simplified-args (map -simplify expr-args)]
-                       (apply lor simplified-args)))]
+                       (if (not (= expr-args simplified-args))
+                         (-simplify (apply lor simplified-args))
+                         (apply lor simplified-args))))]
 
    [(fn [expr] true) (fn [expr] expr)])) ; Все остальные случаи
 
