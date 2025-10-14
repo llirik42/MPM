@@ -99,36 +99,26 @@
       (is (not (pred l3))))))
 
 (deftest test-repr
-  (let [c0 (const 0)
-        c1 (const 1)
-        v1 (variable ::A)
-        v2 (variable ::B)
-        land1 (land c0 c1 v1)
-        lor1 (lor v1 v2 c1)
-        neg1 (lneg c0)
-        neg2 (lneg v1)
-        neg3 (lneg land1)
-        neg4 (lneg lor1)
-        impl1 (limpl c0 v1)
-        impl2 (limpl land1 v1)
-        impl3 (limpl c0 lor1)
-        complex (land lor1 neg1 neg4 impl1 (lor neg2 neg3))]
-    (doseq [[expr expr-repr] [[c0 "0"]
-                              [c1 "1"]
-                              [v1 "A"]
-                              [v2 "B"]
-                              [land1 "(0 & 1 & A)"]
-                              [lor1 "(A v B v 1)"]
-                              [neg1 "¬0"]
-                              [neg2 "¬A"]
-                              [neg3 "¬(0 & 1 & A)"]
-                              [neg4 "¬(A v B v 1)"]
-                              [impl1 "(0 → A)"]
-                              [impl2 "((0 & 1 & A) → A)"]
-                              [impl3 "(0 → (A v B v 1))"]
-                              [complex "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]
-                              [(lor (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C))) "(¬A v ¬B v ¬C)"]]]
-      (is (= expr-repr (repr expr))))))
+  (let [f (const 0)
+        t (const 1)
+        a (variable ::A)
+        b (variable ::B)]
+    (doseq [[expr expected-repr] [[f "0"]
+                                  [t "1"]
+                                  [a "A"]
+                                  [b "B"]
+                                  [(land f t a) "(0 & 1 & A)"]
+                                  [(lor a b t) "(A v B v 1)"]
+                                  [(lneg f) "¬0"]
+                                  [(lneg a) "¬A"]
+                                  [(lneg (land f t a)) "¬(0 & 1 & A)"]
+                                  [(lneg (lor a b t)) "¬(A v B v 1)"]
+                                  [(limpl f a) "(0 → A)"]
+                                  [(limpl (land f a b) a) "((0 & A & B) → A)"]
+                                  [(limpl f (lor a b t)) "(0 → (A v B v 1))"]
+                                  [(land (lor a b t) (lneg f) (lneg (lor a b t)) (limpl f a) (lor (lneg a) (lneg (land f t a)))) "((A v B v 1) & ¬0 & ¬(A v B v 1) & (0 → A) & (¬A v ¬(0 & 1 & A)))"]
+                                  [(lor (lneg (variable ::A)) (lneg (variable ::B)) (lneg (variable ::C))) "(¬A v ¬B v ¬C)"]]]
+      (is (= expected-repr (repr expr))))))
 
 (deftest test-value
   (let [t (const 1)

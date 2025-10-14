@@ -8,22 +8,27 @@
   (list
    [const?
     (fn [expr] (if (const-value expr) "1" "0"))]
+   
    [variable?
     (fn [expr] (name (variable-name expr)))]
+   
    [lneg?
     (fn [expr] (str "¬" (repr (first (args expr)))))]
+   
    [land?
     (fn [expr]
       (let [args (args expr)
             reprs (map repr args)
             f (fn [r1 r2] (str r1 " & " r2))]
         (str "(" (reduce f reprs) ")")))]
+   
    [lor?
     (fn [expr]
       (let [args (args expr)
             reprs (map repr args)
             f (fn [r1 r2] (str r1 " v " r2))]
         (str "(" (reduce f reprs) ")")))]
+   
    [limpl?
     (fn [expr]
       (let [args (args expr)

@@ -39,4 +39,4 @@
 
 (defn value [expr ctx]
   (let [rule (find-first #((first %) expr) -value-rules)]
-     ((second rule) expr ctx)))
+    ((second rule) expr ctx)))
