@@ -3,7 +3,8 @@
             [logic.core :refer :all]
             [logic.repr :refer [repr]]
             [logic.value :refer [value]]
-            [logic.dnf :refer [dnf]]))
+            [logic.dnf :refer [dnf]]
+            [logic.similarity :refer [same?]]))
 
 (deftest test-constants
   (let [c1 (const 0)
@@ -283,8 +284,14 @@
                              [(lor a (lneg a)) (lor a (lneg a))] ;51. TODO: добавить обработку тавтологий (A v ¬A ~ 1)
 
                              [(land a f) f] ;52
+
+                             [(lor (land a b) (land a b)) f]
+
+                             [(land (limpl a b) (limpl (lneg b) (lneg a))) (limpl a b)]
+
+                             [(lor (limpl a b) (limpl (lneg b) (lneg a))) (limpl a b)]
                              ]]
-      (is (= expr-dnf (dnf expr))) ; TODO: при сравнении логических выражений использовать специальную функцию, поскольку например (A & B) и (B & A) это суть одно и то же, однако при сравнении с помощью "=" будет false
+      (is (same? expr-dnf (dnf expr))) ; TODO: при сравнении логических выражений использовать специальную функцию, поскольку например (A & B) и (B & A) это суть одно и то же, однако при сравнении с помощью "=" будет false
       (println (repr expr) "!" (repr expr-dnf) "!" (repr (dnf expr))))))
 
 (run-tests 'logic.tests)

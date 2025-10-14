@@ -33,10 +33,12 @@
     (fn [e1 e2] (let [a11 (first-arg e1)
                       a12 (second-arg e1)
                       a21 (first-arg e2)
-                      a22 (second-arg e2)]
-                  (same? lor1 lor2)))]
+                      a22 (second-arg e2)
+                      or1 (lor (lneg a11) a12)
+                      or2 (lor (lneg a21) a22)]
+                  (same? or1 or2)))]
 
-   [(fn [e1 e2] true) (fn [e1 e2] false)] ; все предыдущие правила не сработали, значит выражения точно не совпадают
+   [(fn [e1 e2] true) (fn [e1 e2] (= e1 e2))] ; все предыдущие правила не сработали, значит выражения точно не совпадают ; TODO:
    ))
 
 (defn same? [e1 e2]
@@ -51,5 +53,5 @@
       d (variable ::D)
       v (land a a)]
   (println (repr (limpl a b)) (repr (limpl (lneg b) (lneg a))))
-  (println (same? (limpl a b) (limpl (lneg b) (lneg a))))
+  (println (same? (lor a b) (lor a b)))
   )
