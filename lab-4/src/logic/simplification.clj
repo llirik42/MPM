@@ -15,7 +15,9 @@
                      value-of-const (const-value (find-first const? args))]
                  (if value-of-const
                    (let [other-args (remove #(= (const 1) %) args)] ; ; const = true удаляем первый true
-                     (-simplify (apply land other-args)))
+                     (if (empty? other-args)
+                       (const 1) ; Стало пусто после того, как удалили все 1, значит было что-то вроде 1 & 1 & 1 & ...
+                       (-simplify (apply land other-args))))
                    (const 0))))] ; const = false
 
    [land? (fn [expr] (let [expr-args (args expr)
@@ -30,7 +32,9 @@
                      value-of-const (const-value (find-first const? args))]
                  (if (not value-of-const)
                    (let [other-args (remove #(= (const 0) %) args)] ; ; const = false удаляем первый false
-                     (-simplify (apply lor other-args)))
+                     (if (empty? other-args)
+                       (const 0) ; Стало пусто, значит мы удалили нули, значит было что-то вроде 0 v 0 v 0 ...
+                       (-simplify (apply lor other-args))))
                    (const 1))))] ; const = true
 
    [lor? (fn [expr] (let [expr-args (args expr) ; Общий случай для логического или

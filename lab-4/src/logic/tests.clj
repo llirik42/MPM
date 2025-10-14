@@ -164,132 +164,127 @@
         e (variable ::E)
         t (const 1)
         f (const 0)]
-  (doseq [[expr expr-dnf] [[(land a b) (land a b)] ; A & B ~ A & B
-                           [(lor a b) (lor a b)] ; A v B ~ A v B
-                           [(lneg a) (lneg a)] ; ¬A ~ ¬A 
-                           [(limpl a b) (lor (lneg a) b)] ; A → B ~ ¬A v B
-                           [(lneg (land a b)) (lor (lneg a) (lneg b))] ; ¬(A & B) ~ ¬A v ¬B
-                           [(lneg (lor a b)) (land (lneg a) (lneg b))] ; ¬(A v B) ~ ¬A & ¬B
-                           [(lor (land a b) c) (lor (land a b) c)] ; (A & B) v C ~ (A & B) v C
-                           [(land a (lor b c)) (lor (land a b) (land a c))] ; A & (B v C) ~ (A & B) v (A & C)
-                           [(land (lor a b) (lor c d)) (lor (land a c) (land b c) (land a d) (land b d))] ; (A v B) & (C v D) ~ (A & C) v (B & C) v (A & D) v (B & D)
-                           [(land (limpl a b) c) (lor (land (lneg a) c) (land b c))] ; (A → B) ∧ C ~ (¬A & C) v (B & C)
-                        [(limpl a (lor b c)) (lor (lneg a) b c)] ; A → (B ∨ C) ~ (¬A v B v C)
-                        [(lneg (limpl a b)) (land a (lneg b))] ; ¬(A → B) ~ (A & ¬B)
-                        [(limpl a (limpl b c)) (lor (lneg a) (lneg b) c)] ; (A → (B → C)) ~ (¬A v ¬B v C)
-                        [(lneg (land a (lor b (lneg c)))) (lor (lneg a) (land (lneg b) c))] ; ¬(A ∧ (B ∨ ¬C)) ~ (¬A v (¬B & C))
-                        ;;    [(land (lor a (land b c)) (lor (lneg a) d)) a] ; (A ∨ (B ∧ C)) ∧ (¬A ∨ D) ~ 
+    (doseq [[expr expr-dnf] [[(land a b) (land a b)] ; A & B ~ A & B
+                             [(lor a b) (lor a b)] ; A v B ~ A v B
+                             [(lneg a) (lneg a)] ; ¬A ~ ¬A 
+                             [(limpl a b) (lor (lneg a) b)] ; A → B ~ ¬A v B
+                             [(lneg (land a b)) (lor (lneg a) (lneg b))] ; ¬(A & B) ~ ¬A v ¬B
+                             [(lneg (lor a b)) (land (lneg a) (lneg b))] ; ¬(A v B) ~ ¬A & ¬B
+                             [(lor (land a b) c) (lor (land a b) c)] ; (A & B) v C ~ (A & B) v C
+                             [(land a (lor b c)) (lor (land a b) (land a c))] ; A & (B v C) ~ (A & B) v (A & C)
+                             [(land (lor a b) (lor c d)) (lor (land a c) (land b c) (land a d) (land b d))] ; (A v B) & (C v D) ~ (A & C) v (B & C) v (A & D) v (B & D)
+                             [(land (limpl a b) c) (lor (land (lneg a) c) (land b c))] ; (A → B) ∧ C ~ (¬A & C) v (B & C)
+                             [(limpl a (lor b c)) (lor (lneg a) b c)] ; A → (B ∨ C) ~ (¬A v B v C)
+                             [(lneg (limpl a b)) (land a (lneg b))] ; ¬(A → B) ~ (A & ¬B)
+                             [(limpl a (limpl b c)) (lor (lneg a) (lneg b) c)] ; (A → (B → C)) ~ (¬A v ¬B v C)
+                             [(lneg (land a (lor b (lneg c)))) (lor (lneg a) (land (lneg b) c))] ; ¬(A ∧ (B ∨ ¬C)) ~ (¬A v (¬B & C))
+                             [(land (lor a (land b c)) (lor (lneg a) d)) (lor (land b c (lneg a)) (land a d) (land b c d))] ; (A ∨ (B ∧ C)) ∧ (¬A ∨ D) ~ 
 
-                        [(land (limpl a b) (limpl c d)) (lor (land (lneg a) (lneg c)) (land b (lneg c)) (land (lneg a) d) (land b d))] ; (A → B) ∧ (C → D) ~ (¬A & ¬C) v (¬A & D) v (B & ¬C) v (B & D)
+                             [(land (limpl a b) (limpl c d)) (lor (land (lneg a) (lneg c)) (land b (lneg c)) (land (lneg a) d) (land b d))] ; (A → B) ∧ (C → D) ~ (¬A & ¬C) v (¬A & D) v (B & ¬C) v (B & D)
 
-                        ;;    [(land (lor a (lneg b)) (lor b (lneg c)) (lor c (lneg a))) a] ;1
+                             [(land (lor a (lneg b)) (lor b (lneg c)) (lor c (lneg a))) (lor (land a b c) (land (lneg a) (lneg b) (lneg c)))] ;TODO: fix. Must be: (A & B & ~A) ~ 0
 
-                        ;; [(lneg (lor (land a b) (land (lneg c) d))) a] ;2
+                             [(lneg (lor (land a b) (land (lneg c) d))) (lor (land (lneg a) c) (land (lneg b) c) (land (lneg a) (lneg d)) (land (lneg b) (lneg d)))] ;2
 
-                        ;;    [(lor (limpl a (land b (lneg c))) (land (lneg a) (limpl c d))) a] ;3
+                             [(lor (limpl a (land b (lneg c))) (land (lneg a) (limpl c d))) (lor (lneg a) (land b (lneg c)) (land (lneg a) (lneg c)) (land (lneg a) d))] ;3
 
-                        ;;    [(lneg (lor (limpl a b) (limpl c (lneg d)))) a] ;4
+                             [(lneg (lor (limpl a b) (limpl c (lneg d)))) (land a (lneg b) c d)] ;4
 
-                        ;;    [(limpl (land (lor a (lneg b)) (lor (lneg a) c)) (lor d (lneg e))) a] ;5
+                             [(limpl (land (lor a (lneg b)) (lor (lneg a) c)) (lor d (lneg e))) (lor (land (lneg a) b) (land a (lneg c)) d (lneg e))] ;5
 
-                        ;;    [(land (lor a b c) (lor (lneg a) (lneg b) d)) a] ;6
+                             [(land (lor a b c) (lor (lneg a) (lneg b) d)) (lor (land b (lneg a)) (land c (lneg a)) (land a (lneg b)) (land c (lneg b)) (land a d) (land b d) (land c d))] ;6
 
-                        ;;    [(lneg (land a (limpl b (lor c (lneg d))))) a] ;7 
+                             [(lneg (land a (limpl b (lor c (lneg d))))) (lor (lneg a) (land b (lneg c) d))] ;7 
 
-                        ;;    [(land a t) a] ;8
+                             [(land a t) a] ;8
 
-                        ;;    [(land a f) a] ;9
+                             [(land a f) f] ;9
 
-                        ;;    [(lor a f) a] ;10
+                             [(lor a f) a] ;10
 
-                        ;;    [(lor a t) a] ;11
+                             [(lor a t) t] ;11
 
-                        ;;    [(limpl f t) a] ;12
+                             [(limpl f t) t] ;12
 
-                        ;;    [(limpl f f) a] ;13
+                             [(limpl f f) t] ;13
 
-                        ;;    [(limpl t f) a] ;14
+                             [(limpl t f) f] ;14
 
-                        ;; [(limpl t t) t] ;15
+                             [(limpl t t) t] ;15
 
-                        ;; [(lneg t) f] ;16
+                             [(lneg t) f] ;16
 
-                        ;; [(lneg f) t] ;17
+                             [(lneg f) t] ;17
 
-                        ;; [(land (lor a b) t) (lor a b)] ;18
+                             [(land (lor a b) t) (lor a b)] ;18
 
-                        ;; [(lor (land a b) f) (land a b)] ;19
+                             [(lor (land a b) f) (land a b)] ;19
 
-                        [(land (lor a f) (lor b t)) (lor (land a b) a)] ;20. TODO: реализовать закон поглощения
+                             [(land (lor a f) (lor b t)) (lor (land a b) a)] ;20. TODO: реализовать закон поглощения
 
-                        [(lor (land a t) (land b f)) a] ;21
+                             [(lor (land a t) (land b f)) a] ;21
 
-                        [(lor (land (lneg a) f) b) b] ;22
+                             [(lor (land (lneg a) f) b) b] ;22
 
-                        [(lneg (lor a f)) (lneg a)] ;23
+                             [(lneg (lor a f)) (lneg a)] ;23
 
-                        [(lneg (land a t)) (lneg a)] ;24
+                             [(lneg (land a t)) (lneg a)] ;24
 
-                        [(land (lor a t) (lor b f)) (lor (land a b) b)] ;25. TODO: реализовать закон поглощения 
+                             [(land (lor a t) (lor b f)) (lor (land a b) b)] ;25. TODO: реализовать закон поглощения 
 
-                        [(lor (land a (lor b f)) (land c t)) (lor (land a b) c)] ;26
+                             [(lor (land a (lor b f)) (land c t)) (lor (land a b) c)] ;26
 
-                        [(lor (land a (lneg b)) (land f c)) (land a (lneg b))] ;27
+                             [(lor (land a (lneg b)) (land f c)) (land a (lneg b))] ;27
 
-                        [(lor (lor a (land b f)) (land c t)) (lor a c)] ;28
-                           
-                        [(land (limpl a b) t) (lor (lneg a) b)] ;29
+                             [(lor (lor a (land b f)) (land c t)) (lor a c)] ;28
 
-                        [(limpl a (lor b f)) (lor (lneg a) b)] ;30
+                             [(land (limpl a b) t) (lor (lneg a) b)] ;29
 
-                        [(lneg (lor (land a f) (land b t))) (lor (land (lneg a) (lneg b)) (lneg b))] ;31
+                             [(limpl a (lor b f)) (lor (lneg a) b)] ;30
 
-                        [(lor (limpl t a) (limpl f b)) t] ;32
+                             [(lneg (lor (land a f) (land b t))) (lor (land (lneg a) (lneg b)) (lneg b))] ;31
 
-                        [(land (limpl a t) (limpl b f)) (lor (land (lneg a) (lneg b)) (lneg b))] ;33
+                             [(lor (limpl t a) (limpl f b)) t] ;32
 
-                        [(lor (land a (limpl b f)) (land (lneg c) t)) (lor (land a (lneg b)) (lneg c))] ;35
+                             [(land (limpl a t) (limpl b f)) (lor (land (lneg a) (lneg b)) (lneg b))] ;33
 
-                        [(land (lor a f) (lor b (land c t))) (lor (land a b) (land a c))] ;36
+                             [(lor (land a (limpl b f)) (land (lneg c) t)) (lor (land a (lneg b)) (lneg c))] ;35
 
-                        [(limpl (lor (land a f) (land b t)) (lor t c)) t] ;37
+                             [(land (lor a f) (lor b (land c t))) (lor (land a b) (land a c))] ;36
 
-                        [(lneg (lor (land a t) (land f (lneg b)))) (lor (lneg a) (land (lneg a) b))] ;38. TODO: при добавлении закона поглощения нужно изменить этот тест
+                             [(limpl (lor (land a f) (land b t)) (lor t c)) t] ;37
 
-                        [(lor (land (lor a b) (lor f c)) (land (lneg a) t)) (lor (land a c) (land b c) (lneg a))] ;39
+                             [(lneg (lor (land a t) (land f (lneg b)))) (lor (lneg a) (land (lneg a) b))] ;38. TODO: при добавлении закона поглощения нужно изменить этот тест
 
-                        [(land (limpl (lor b f) a) (limpl c t)) (lor (land (lneg b) (lneg c)) (land a (lneg c)) (lneg b) a)] ;40. TODO: закон поглощения
-                        
-                        ;[(land (lor a (land b (lor c f))) (limpl d t)) a] ;41
+                             [(lor (land (lor a b) (lor f c)) (land (lneg a) t)) (lor (land a c) (land b c) (lneg a))] ;39
 
-                        ;[(lor a a) a] ;42
+                             [(land (limpl (lor b f) a) (limpl c t)) (lor (land (lneg b) (lneg c)) (land a (lneg c)) (lneg b) a)] ;40. TODO: закон поглощения
 
-                        ;;    [(land a a) a] ;43
+                             [(land (lor a (land b (lor c f))) (limpl d t)) (lor (land a (lneg d)) a (land b c (lneg d)) (land b c))] ;41
 
-                        ;;    [(lor (land a b) (land a b)) a] ;44
+                             [(lor a a) (lor a a)] ;42. TODO: A v A ~ A v A (нужно фиксить)
 
-                        ;;    [(land a (lneg a)) a] ;45
+                             [(land a a) (land a a)] ;43. TODO: A & A ~ A & A (нужно фиксить)
 
-                        ;;    [(lor (land a (lneg a)) b) a] ;46
+                             [(lor (land a b) (land a b)) (lor (land a b) (land a b))] ;44. TODO: (A & B) v (A & B) ~ (A & B) v (A & B) (нужно фиксить)
 
-                        ;;    [(lor (land a (lneg a)) (land b c)) a] ;47
+                             [(land a (lneg a)) f] ;45
 
-                        ;;    [(lor (land a b) a) a] ;48
+                             [(lor (land a (lneg a)) b) b] ;46
 
-                        ;;    [(lor (land a b) (land a b c)) a] ;49
+                             [(lor (land a (lneg a)) (land b c)) (land b c)] ;47
 
-                        ;;    [(lor a (land a b)) a] ;50
+                             [(lor (land a b) a) (lor (land a b) a)] ;48. TODO: закон поглощения
 
-                        ;;    [(lor a (lneg a)) a] ;51
+                             [(lor (land a b) (land a b c)) (lor (land a b) (land a b c))] ;49. TODO: закон поглощения
 
-                        ;[(land a f) f] ;52
+                             [(lor a (land a b)) (lor a (land a b))] ;50. TODO: закон поглощения
 
+                             [(lor a (lneg a)) (lor a (lneg a))] ;51. TODO: добавить обработку тавтологий (A v ¬A ~ 1)
 
-
-
-                           ]]
-    (is (= expr-dnf (dnf expr))) ; TODO: при сравнении логических выражений использовать специальную функцию, поскольку например (A & B) и (B & A) это суть одно и то же, однако при сравнении с помощью "=" будет false
-    ;(println (repr expr) "!" (repr expr-dnf) "!" (repr (dnf expr)))
-    )))
+                             [(land a f) f] ;52
+                             ]]
+      (is (= expr-dnf (dnf expr))) ; TODO: при сравнении логических выражений использовать специальную функцию, поскольку например (A & B) и (B & A) это суть одно и то же, однако при сравнении с помощью "=" будет false
+      (println (repr expr) "!" (repr expr-dnf) "!" (repr (dnf expr))))))
 
 (run-tests 'logic.tests)
