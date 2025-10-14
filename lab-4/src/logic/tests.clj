@@ -5,7 +5,7 @@
             [logic.value :refer [value]]
             [logic.dnf :refer [dnf]]))
 
-(deftest test-constants
+(deftest test-constant-creation
   (let [c1 (const 0)
         c2 (const false)
         c3 (const 1)
@@ -18,24 +18,24 @@
     (is (= false (const-value c2)))
     (is (= true (const-value c3)))
     (is (= true (const-value c4)))
-    (doseq [pred [variable? lneg? land? lor? limpl?]]
-      (is (not (pred c1)))
-      (is (not (pred c2)))
-      (is (not (pred c3)))
-      (is (not (pred c4))))))
+    (doseq [false-pred [variable? lneg? land? lor? limpl?]]
+      (is (not (false-pred c1)))
+      (is (not (false-pred c2)))
+      (is (not (false-pred c3)))
+      (is (not (false-pred c4))))))
 
-(deftest test-variables
+(deftest test-variable-creation
   (let [v1 (variable ::A)
         v2 (variable ::B)]
     (is (variable? v1))
     (is (variable? v2))
     (is (= ::A (variable-name v1)))
     (is (= ::B (variable-name v2)))
-    (doseq [pred [const? lneg? land? lor? limpl?]]
-      (is (not (pred v1)))
-      (is (not (pred v2))))))
+    (doseq [false-pred [const? lneg? land? lor? limpl?]]
+      (is (not (false-pred v1)))
+      (is (not (false-pred v2))))))
 
-(deftest test-lneg
+(deftest test-negation-creation
   (let [c (const 1)
         l1 (lneg c)
         l2 (lneg l1)]
@@ -43,11 +43,11 @@
     (is (lneg? l2))
     (is (= (list c) (args l1)))
     (is (= (list l1) (args l2)))
-    (doseq [pred [const? variable? land? lor? limpl?]]
-      (is (not (pred l1)))
-      (is (not (pred l2))))))
+    (doseq [false-pred [const? variable? land? lor? limpl?]]
+      (is (not (false-pred l1)))
+      (is (not (false-pred l2))))))
 
-(deftest test-land
+(deftest test-conjuction-creations
   (let [c (const 1)
         v (variable ::A)
         l1 (land c v)
@@ -59,12 +59,12 @@
     (is (= (list c v) (args l1)))
     (is (= (list v c) (args l2)))
     (is (= (list c v l1 l2) (args l3)))
-    (doseq [pred [const? variable? lneg? lor? limpl?]]
-      (is (not (pred l1)))
-      (is (not (pred l2)))
-      (is (not (pred l3))))))
+    (doseq [false-pred [const? variable? lneg? lor? limpl?]]
+      (is (not (false-pred l1)))
+      (is (not (false-pred l2)))
+      (is (not (false-pred l3))))))
 
-(deftest test-lor
+(deftest test-disjunction-creation
   (let [c (const 0)
         v (variable ::B)
         l1 (lor c v)
@@ -76,12 +76,12 @@
     (is (= (list c v) (args l1)))
     (is (= (list v c) (args l2)))
     (is (= (list l1 l2 v c) (args l3)))
-    (doseq [pred [const? variable? lneg? land? limpl?]]
-      (is (not (pred l1)))
-      (is (not (pred l2)))
-      (is (not (pred l3))))))
+    (doseq [false-pred [const? variable? lneg? land? limpl?]]
+      (is (not (false-pred l1)))
+      (is (not (false-pred l2)))
+      (is (not (false-pred l3))))))
 
-(deftest test-limpl
+(deftest test-implication-creation
   (let [c (const 0)
         v (variable ::B)
         l1 (limpl c v)
@@ -93,10 +93,10 @@
     (is (= (list c v) (args l1)))
     (is (= (list v c) (args l2)))
     (is (= (list l1 l2) (args l3)))
-    (doseq [pred [const? variable? lneg? land? lor?]]
-      (is (not (pred l1)))
-      (is (not (pred l2)))
-      (is (not (pred l3))))))
+    (doseq [false-pred [const? variable? lneg? land? lor?]]
+      (is (not (false-pred l1)))
+      (is (not (false-pred l2)))
+      (is (not (false-pred l3))))))
 
 (deftest test-repr
   (let [f (const 0)

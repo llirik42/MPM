@@ -6,29 +6,33 @@
 
 (def -repr-rules
   (list
+   ;; Handling of constant
    [const?
     (fn [expr] (if (const-value expr) "1" "0"))]
-   
+
+   ;; Handling of variable
    [variable?
     (fn [expr] (name (variable-name expr)))]
-   
+
+   ;; Handling of negations
    [lneg?
     (fn [expr] (str "¬" (repr (first (args expr)))))]
-   
+
+   ;; Handling of conjuction
    [land?
     (fn [expr]
-      (let [args (args expr)
-            reprs (map repr args)
+      (let [reprs (map repr (args expr))
             f (fn [r1 r2] (str r1 " & " r2))]
         (str "(" (reduce f reprs) ")")))]
-   
+
+   ;; Handling of disjunction
    [lor?
     (fn [expr]
-      (let [args (args expr)
-            reprs (map repr args)
+      (let [reprs (map repr (args expr))
             f (fn [r1 r2] (str r1 " v " r2))]
         (str "(" (reduce f reprs) ")")))]
-   
+
+   ;; Handling of implication
    [limpl?
     (fn [expr]
       (let [args (args expr)
@@ -36,6 +40,8 @@
             a2 (second args)]
         (str "(" (repr a1) " → " (repr a2) ")")))]))
 
-(defn repr [expr]
+(defn repr
+  "Returns string representation of the given expression. Function goes through all the subexpressions recursively."
+  [expr]
   (let [rule (find-first #((first %) expr) -repr-rules)]
     ((second rule) expr)))

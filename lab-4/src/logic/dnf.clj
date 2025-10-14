@@ -123,7 +123,7 @@
   (let [rule (find-first #((first %) expr) -dnf-rules)]
     ((second rule) expr)))
    
-   
+
 (defn dnf [expr] 
   (let [expr-dnf (-dnf expr)]
     ;(println (repr expr-dnf))
