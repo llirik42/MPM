@@ -56,3 +56,18 @@
 (defn simplify [expr] 
   (println "Before: " (repr expr) "    After: " (repr (-simplify expr)))
   (-simplify expr))
+
+(defn -my-func [rest-args]
+  (let [expr-args (args expr)]
+    ))
+
+(defn my-func [expr] (-my-func expr {}))
+
+(let [a (variable ::A)
+      b (variable ::B)
+      c (variable ::C)
+      v (land (a b c))]
+  
+  
+  
+  )
