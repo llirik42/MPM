@@ -1,7 +1,7 @@
 (ns logic.utils)
 
 (defn int-or-bool-to-bool
-  "Function either takes an integer and converts it to Boolean (0 is false, the rest is true), or it takes a boolean and returns it unchanged." 
+  "Function either takes an integer and converts it to Boolean (0 is false, the rest is true), or it takes a boolean and returns it unchanged."
   [v]
   (if (int? v)
     (if (== v 0) false true)
