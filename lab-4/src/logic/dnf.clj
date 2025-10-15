@@ -6,43 +6,74 @@
 
 (def -simplification-rules
   (list
-   [(fn [expr] (and (land? expr) (unary? expr))) ; Вырожденный случай: конъюнкция одного аргумента
+
+   ;; Handling conjuction of one argument.
+   [(fn [expr] (and (land? expr) (unary? expr)))
     (fn [expr] (-simplify (first-arg expr)))]
 
-   [(fn [expr] (and (land? expr) (find-first const? (args expr)))); Логическое И, в котором есть константы
-    (fn [expr] (let [args (args expr)
-                     value-of-const (const-value (find-first const? args))]
+   ;; Handling conjuction with constants.
+   [(fn [expr] (and (land? expr) (find-first const? (args expr))))
+    (fn [expr] (let [expr-args (args expr)
+                     value-of-const (const-value (find-first const? expr-args))]
                  (if value-of-const
-                   (let [other-args (remove #(= (const 1) %) args)] ; ; const = true удаляем первый true
+                   
+                   ; Constant is `true`. Remove constant from the expression, because `E` = `A & 1 & B` = `A & B`.
+                   (let [other-args (remove #(= (const 1) %) expr-args)]
                      (if (empty? other-args)
-                       (const 1) ; Стало пусто после того, как удалили все 1, значит было что-то вроде 1 & 1 & 1 & ...
+                       
+                       ; There are not arguments left after removing `true`, which means there was a conjuction of 1's (`E` = `1 & 1 & 1 & ....` = `1`), so return `true`.
+                       (const 1) 
+                       
                        (-simplify (apply land other-args))))
-                   (const 0))))] ; const = false
+                     
+                   ; Constant is `false`, it means `E` = `A & 0 & B` = `0`.
+                   (const 0))))]
 
-   [land? (fn [expr] (let [expr-args (args expr)
-                           simplified-args (map -simplify expr-args)]
-                       (apply land simplified-args)))]
+   ;; Handling other cases of conjuction.
+   [land?
+    (fn [expr] (let [expr-args (args expr)
+                     simplified-args (map -simplify expr-args)]
+                 
+                 ; TODO: сompare expressions using a special function, rather than using =, since different expressions can mean essentially the same thing, for example `A v B` and `B v A`.
+                 (if (not (= expr-args simplified-args))
+                   (-simplify (apply land simplified-args))
+                   (apply land simplified-args))))]
 
-   [(fn [expr] (and (lor? expr) (unary? expr))) ; Вырожденный случай: дизъюнкция одного аргумента
+   ;; Handling disjunction of one argument.
+   [(fn [expr] (and (lor? expr) (unary? expr)))
     (fn [expr] (-simplify (first-arg expr)))]
 
-   [(fn [expr] (and (lor? expr) (find-first const? (args expr)))); Логическое ИЛИ, в котором есть константы
-    (fn [expr] (let [args (args expr)
-                     value-of-const (const-value (find-first const? args))]
+   ;; Handling disjunction with constants.
+   [(fn [expr] (and (lor? expr) (find-first const? (args expr))))
+    (fn [expr] (let [expr-args (args expr)
+                     value-of-const (const-value (find-first const? expr-args))]
+                 
+                 ; Constant is `false`. Remove constant from the expression, because `E` = `A v 0 v B` = `A v B`.
                  (if (not value-of-const)
-                   (let [other-args (remove #(= (const 0) %) args)] ; ; const = false удаляем первый false
+                   (let [other-args (remove #(= (const 0) %) expr-args)]
                      (if (empty? other-args)
-                       (const 0) ; Стало пусто, значит мы удалили нули, значит было что-то вроде 0 v 0 v 0 ...
+                       
+                       ; There are not arguments left after removing `false`, which means there was a disjunction of 0's (`E` = `0 v 0 v 0 & ....` = `0`), so return `false`.
+                       (const 0)
+
                        (-simplify (apply lor other-args))))
-                   (const 1))))] ; const = true
+                   
+                   ; Constant is `true`, it means `E` = `A v 1 v B` = `1`.
+                   (const 1))))]
 
-   [lor? (fn [expr] (let [expr-args (args expr) ; Общий случай для логического или
-                          simplified-args (map -simplify expr-args)]
-                      (if (not (= expr-args simplified-args))
-                        (-simplify (apply lor simplified-args))
-                        (apply lor simplified-args))))]
+   ;; Handling other cases of disjunction.
+   [lor?
+    (fn [expr] (let [expr-args (args expr)
+                     simplified-args (map -simplify expr-args)]
+                 
+                 ; TODO: сompare expressions using a special function, rather than using =, since different expressions can mean essentially the same thing, for example `A v B` and `B v A`.
+                 (if (not (= expr-args simplified-args))
+                   (-simplify (apply lor simplified-args))
+                   (apply lor simplified-args))))]
 
-   [(fn [expr] true) (fn [expr] expr)])) ; Все остальные случаи
+   ;; Handling other cases.
+   [(fn [expr] true)
+    (fn [expr] expr)]))
 
 (defn -simplify [expr]
   (let [rule (find-first #((first %) expr) -simplification-rules)]
