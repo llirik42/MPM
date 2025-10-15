@@ -6,12 +6,12 @@
 
 (def -value-rules
   (list
-   ;; Handling of constant
+   ;; Handling the constant.
    [const?
     (fn [expr ctx]
       (const-value expr))]
 
-   ;; Handling of variable
+   ;; Handling the variable.
    [variable?
     (fn [expr ctx]
       (let [name (variable-name expr)
@@ -20,25 +20,25 @@
           (throw (Exception. (str "Unknown variable " name)))
           v)))]
 
-   ;; Handling of negation
+   ;; Handling the negation.
    [lneg?
     (fn [expr ctx]
       (let [arg (first (args expr))]
         (not (value arg ctx))))]
 
-   ;; Handling of conjuction
+   ;; Handling the conjuction.
    [land?
     (fn [expr ctx]
       (let [args-values (map #(value % ctx) (args expr))]
         (reduce #(and %1 %2) true args-values)))]
 
-   ;; Handling of disjunction
+   ;; Handling the disjunction.
    [lor?
     (fn [expr ctx]
       (let [args-values (map #(value % ctx) (args expr))]
         (reduce #(or %1 %2) false args-values)))]
 
-   ;; Handling of implication
+   ;; Handling the implication.
    [limpl?
     (fn [expr ctx]
       (let [[a1 a2] (args expr)
@@ -47,7 +47,7 @@
         (or (not v1) v2)))]))
 
 (defn value
-  "Returns value of the given expression (true/false) in the given context. The context must be a dictionary, where the key is a name of variable and the value is the variable's value. Function goes through all the subexpressions recursively."
+  "Returns value of the given expression (true/false) in the given context. The context must be a dictionary, where the key is a name of variable and the value is the variable's value (0/1 or true/false). Function goes through all the subexpressions recursively."
   [expr ctx]
   (let [rule (find-first #((first %) expr) -value-rules)]
     ((second rule) expr ctx)))

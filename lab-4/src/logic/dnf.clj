@@ -1,15 +1,12 @@
 (ns logic.dnf
   (:require [logic.core :refer :all])
-  (:require [logic.repr :refer :all])
   (:require [logic.utils :refer [find-first]]))
-
-(declare -dnf)
 
 (declare -simplify)
 
 (def -simplification-rules
   (list
-   [(fn [expr] (and (land? expr) (== 1 (count (args expr))))) ; Вырожденный случай: конъюнкция одного аргумента
+   [(fn [expr] (and (land? expr) (unary? expr))) ; Вырожденный случай: конъюнкция одного аргумента
     (fn [expr] (-simplify (first-arg expr)))]
 
    [(fn [expr] (and (land? expr) (find-first const? (args expr)))); Логическое И, в котором есть константы
@@ -26,7 +23,7 @@
                            simplified-args (map -simplify expr-args)]
                        (apply land simplified-args)))]
 
-   [(fn [expr] (and (lor? expr) (== 1 (count (args expr))))) ; Вырожденный случай: дизъюнкция одного аргумента
+   [(fn [expr] (and (lor? expr) (unary? expr))) ; Вырожденный случай: дизъюнкция одного аргумента
     (fn [expr] (-simplify (first-arg expr)))]
 
    [(fn [expr] (and (lor? expr) (find-first const? (args expr)))); Логическое ИЛИ, в котором есть константы
@@ -51,129 +48,160 @@
   (let [rule (find-first #((first %) expr) -simplification-rules)]
     ((second rule) expr)))
 
-(defn simplify [expr]
-  ;(println "Before: " (repr expr) "    After: " (repr (-simplify expr)))
-  (-simplify expr))
+(defn -flatten-and1
+  "Function unwraps one level of nested conjunctions. Example: `A & (B & (C & (D & E)))` will be `A & B & (C & (D & E))`."
+  [expr]
+  (let [and-args (args expr)
+        new-args (reduce
+                  (fn [acc v]
+                    (if (land? v)
+                      (concat acc (args v))
+                      (concat acc (list v))))
+                  (list)
+                  and-args)]
+    (apply land new-args)))
 
-(defn flatten-or [expr] (let [or-args (args expr)
-                              dnf-args (map -dnf or-args)
-                              new-args (reduce (fn [acc v]
-                                                 (if (lor? v)
-                                                   (concat acc (args v))
-                                                   (concat acc (list v))))
-                                               (list)
-                                               dnf-args)]
-                          (apply lor new-args)))
+(defn -nest-and1
+  "Function converts a conjunction with potentially more than two arguments into a conjunction with two arguments (not recursively) and returns it. Example: `A & B & C & D` will be transformed into `A & (B & C & D)`."
+  [expr]
+  (let [f (first (args expr))
+        r (rest (args expr))]
+    (land f (apply land r))))
 
-(defn flatten-and [expr] (let [and-args (args expr)
-                               new-args (reduce (fn [acc v]
-                                                  (if (land? v)
-                                                    (concat acc (args v))
-                                                    (concat acc (list v))))
-                                                (list)
-                                                and-args)] 
-                           (apply land new-args)))
+(declare -dnf)
+
+(defn -flatten-or
+  "Function turns nested disjunctions into a single disjunction with a large number of arguments and returns it. Example: `A v (B v (C v D))` will be transformed into `A v B v C v D`."
+  [expr]
+  (let [or-args (args expr)
+        dnf-args (map -dnf or-args) ; Calling of `-dnf` implicitly calls `-flatten-or`.
+        new-args (reduce
+                  (fn [acc v]
+                    (if (lor? v)
+                      (concat acc (args v))
+                      (concat acc (list v))))
+                  (list)
+                  dnf-args)]
+    (apply lor new-args)))
 
 (def -dnf-rules
   (list
-   [const? (fn [expr] expr)]
-   [variable? (fn [expr] expr)] ; обработка переменной, возвращаем переменную без изменений ; обработка константы, возвращаем константы без изменений
-   [(fn [expr] (and (lneg? expr) (const? (first-arg expr)))); Отрицание константы
+
+   ;; Handling the constant.
+   [const?
+    (fn [expr] expr)]
+
+   ;; Handling the variable.
+   [variable?
+    (fn [expr] expr)]
+
+   ;; Handling the negation of a constant.
+   [(fn [expr] (and (lneg? expr) (const? (first-arg expr))))
     (fn [expr]
       (let [arg (first-arg expr)
             v (const-value arg)]
-        (const (not v))))] ; вычисления значения новой константы 
-   [(fn [expr] (and (lneg? expr) (variable? (first-arg expr)))); Отрицание переменной 
-    (fn [expr] expr)] ; возвращаем без изменений
+        (const (not v))))]
 
-   [(fn [expr] (and (lneg? expr) (lneg? (first-arg expr)))); Отрицание отрицания 
-    (fn [expr] (let [neg-arg (first-arg (first-arg expr))]
-                 (-dnf neg-arg)))] ; Возврат выражения без отрицания (Двойное отрицание)
+   ;; Handling the negation of a variable.
+   [(fn [expr] (and (lneg? expr) (variable? (first-arg expr))))
+    (fn [expr] expr)]
 
-   ; TODO: пофиксить (dnf не там, где надо)
-   [(fn [expr] (and (lneg? expr) (land? (first-arg expr)))); Отрицание И (закон Де-моргана)
+   ;; Handling the negation of a negation. It uses rule `¬(¬A)` ~ `A`.
+   [(fn [expr] (and (lneg? expr) (lneg? (first-arg expr))))
+    (fn [expr] (first-arg (first-arg expr)))]
+
+   ;; Handling the negation of a conjuction. It uses De Morgan's laws: `¬(A & B)` ~ `¬A v ¬B`.
+   [(fn [expr] (and (lneg? expr) (land? (first-arg expr))))
     (fn [expr] (let [and-args (args (first-arg expr))
-                     mapped-and-args (map #(-dnf (lneg %)) and-args)]
-                 (-dnf (apply lor mapped-and-args))))] ; Закон Де-моргана
+                     mapped-and-args (map #(lneg %) and-args)]
+                 (-dnf (apply lor mapped-and-args))))]
 
-   ; TODO: пофиксить (dnf не там, где надо)
-   [(fn [expr] (and (lneg? expr) (lor? (first-arg expr)))); Отрицание ИЛИ (закон Де-моргана)
+   ;; Handling the negation of a disjunction. It uses De Morgan's laws: `¬(A v B)` ~ `¬A & ¬B`.
+   [(fn [expr] (and (lneg? expr) (lor? (first-arg expr))))
     (fn [expr] (let [or-args (args (first-arg expr))
-                     mapped-or-args (map #(-dnf (lneg %)) or-args)]
-                 (-dnf (apply land mapped-or-args))))] ; Закон Де-моргана
+                     mapped-or-args (map #(lneg %) or-args)]
+                 (-dnf (apply land mapped-or-args))))]
 
-   ; TODO: пофиксить (dnf не там, где надо)
-   [(fn [expr] (and (lneg? expr) (limpl? (first-arg expr)))); Отрицание импликации
-    (fn [expr] (let [arg (first-arg expr)] ; arg is implication
+   ;; Handling the negation of an implication. It recursively uses De Morgan's laws: `¬(A → B)` ~ `¬(¬A v B)` ~ `A & ¬B`.
+   [(fn [expr] (and (lneg? expr) (limpl? (first-arg expr))))
+    (fn [expr] (let [arg (first-arg expr)]
                  (-dnf (lneg (-dnf arg)))))]
-   
-   [(fn [expr] (and (== 2 (count (args expr))) (land? expr) (lor? (second-arg expr)))); A & (B v C v D v ...)
+
+   ;; Handling the conjuction where the second arguments is a disjunction. Uses distributive property: `A & (B v C v ...)` ~ `(A & B) v (A & C) v ...`.
+   [(fn [expr] (and (land? expr) (binary? expr) (lor? (second-arg expr))))
     (fn [expr] (let [arg1 (first-arg expr)
                      arg2 (second-arg expr)
                      or-args (args arg2)
-                     ands (map #(-dnf (land arg1 %)) or-args)]
+                     ands (map #(land arg1 %) or-args)]
                  (-dnf (apply lor ands))))]
 
-   [(fn [expr] (and (== 2 (count (args expr))) (land? expr) (lor? (first-arg expr)))); (B v C v D v ...) & A
+   ;; Handling the conjuction where the first arguments is a disjunction. Uses distributive property: `(B v c v ...) & A` ~ `(B & A) v (C & A) v ...`.
+   [(fn [expr] (and (land? expr) (binary? expr) (lor? (first-arg expr))))
     (fn [expr] (let [arg1 (first-arg expr)
                      arg2 (second-arg expr)
                      or-args (args arg1)
-                     ands (map #(-dnf (land % arg2)) or-args)]
+                     ands (map #(land % arg2) or-args)]
                  (-dnf (apply lor ands))))]
 
-   [(fn [expr] (and (== 2 (count (args expr))) (land? expr))) ; Конъюнкция от двух аргументов
-    (fn [expr] (let [arg1 (-dnf (first-arg expr))
-                     arg2 (-dnf (second-arg expr))
-                     l1 (land? arg1)
-                     l2 (land? arg2)
-                     changed1 (not (= arg1 (first-arg expr)))
-                     changed2 (not (= arg2 (second-arg expr)))
+   ;; Handling the conjuction of two arguments.
+   [(fn [expr] (and (land? expr) (binary? expr)))
+    (fn [expr] (let [arg1 (first-arg expr)
+                     arg2 (second-arg expr)
+                     arg1-dnf (-dnf arg1)
+                     arg2-dnf (-dnf arg2)
+                     cond1 (land? arg1-dnf)
+                     cond2 (land? arg2-dnf)
+                     arg1-changed (not (= arg1-dnf arg1))
+                     arg2-changed (not (= arg2-dnf arg2))
                      res (cond
-                           (and l1 l2) (let [args1 (args arg1)
-                                             args2 (args arg2)]
-                                         (apply land (concat args1 args2)))
-                           
-                           (and l1 (not l2)) (let [args1 (args arg1)
-                                                   args2 (list arg2)]
-                                               (apply land (concat args1 args2)))
-                           
-                           (and (not l1) l2) (let [args1 (list arg1)
-                                                   args2 (args arg2)]
-                                               (apply land (concat args1 args2)))
-                           
-                           (and (not l1) (not l2)) (if (or (= (lneg arg1) arg2) (= (lneg arg2) arg1))
-                                                     (const 0)
-                                                     (land arg1 arg2)))]
-                 (if (or changed1 changed2)
-                   (-dnf res)
-                   res)
-                 ))]
+                           ; `E` = `(A1 & B1 & ...) & (A2 & B2 & ...)` ~ `A1 & B1 & ... & A2 & B2 & ...`.
+                           (and cond1 cond2)
+                           (apply land (concat (args arg1-dnf) (args arg2-dnf)))
 
-   [land? ; все остальные случаи для конъюнкции
-    (fn [expr] (let [args (args expr)
-                     f (first args)
-                     r (rest args)
-                     tmp (-dnf (land (-dnf f) (-dnf (apply land r))))] ; tmp - вложенная конъюнкция, при этом у конъюнкций не более двух аргументов  
-                 (if (land? tmp) ; После преобразования к ДНФ, конъюнкция может стать дизъюнкцией с помощью применения закона Де-Моргана 
-                   (flatten-and tmp)
-                   tmp)))]
-   
-   [lor? ; Остальные случаи для ИЛИ
-    (fn [expr] (flatten-or expr))]
+                           ; `E` = `(A1 & B1 & ...) & Z` ~ `A1 & B1 & ... & Z`.
+                           (and cond1 (not cond2))
+                           (apply land (concat (args arg1-dnf) (list arg2-dnf)))
 
-   [limpl?; Импликация
+                           ; `E` = `Z & (A1 & B1 & ...)` ~ `Z & A1 & B1 & ...`.
+                           (and (not cond1) cond2)
+                           (apply land (concat (list arg1-dnf) (args arg2-dnf)))
+
+                           ; `E` = `A & B`.
+                           (and (not cond1) (not cond2))
+                           (if (or (= (lneg arg1-dnf) arg2-dnf) (= (lneg arg2-dnf) arg1-dnf)) ; TODO: сompare expressions using a special function, rather than using =, since different expressions can mean essentially the same thing, for example `A v B` and `B v A`.
+                             (const 0) ; A & ¬A ~ 0
+                             (land arg1-dnf arg2-dnf)))]
+
+                 ; At least one argument of the expression changed after the conversion to DNF. This check need to be here to to avoid infinite recursion.
+                 (if (or arg1-changed arg2-changed) (-dnf res) res)))]
+
+   ;; Handling other cases of conjuction.
+   [land?
+    (fn
+      [expr]
+      (let [nested (-nest-and1 expr)
+            nested-dnf (-dnf nested)] ; Calling of `-dnf` implicitly calls `-nest-and1."
+            ; Nesting is necessary so that conjunctions with a large number of arguments can be handled as conjunctions with only two arguments using other rules.
+
+        ; This if is needed here, because after conversion to DNF, a conjunction can become a disjunction by applying De Morgan's law.
+        (if (land? nested-dnf) (-flatten-and1 nested-dnf) nested-dnf)))]
+
+   ;; Handling other cases of disjunction.
+   [lor?
+    (fn [expr] (-flatten-or expr))]
+
+   ;; Handling implication. It uses the identity `A → B` ~ `¬A v B`.
+   [limpl?
     (fn [expr] (let [a1 (first-arg expr)
                      a2 (second-arg expr)]
                  (-dnf (lor (lneg a1) a2))))]))
 
-
-
 (defn -dnf [expr]
   (let [rule (find-first #((first %) expr) -dnf-rules)]
     ((second rule) expr)))
-   
 
-(defn dnf [expr] 
+(defn dnf
+  "Returns the given expression in disjunctive normal form. Function goes through all the subexpressions recursively."
+  [expr]
   (let [expr-dnf (-dnf expr)]
-    ;(println (repr expr-dnf))
-    (simplify expr-dnf)))
+    (-simplify expr-dnf)))

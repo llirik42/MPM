@@ -168,6 +168,12 @@
                                  [neg-a
                                   neg-a]
 
+                                 [(lneg neg-a)
+                                  a]
+
+                                 [(land (lneg neg-a) (lneg neg-b))
+                                  (land a b)]
+
                                  [(limpl a b)
                                   (lor neg-a b)]
 
@@ -361,14 +367,14 @@
                                  [(lor a (land a b))
                                   (lor a (land a b))]
 
-                                 ;; TODO: change this test after adding support of (A v ¬A ~ 1).
+                                 ;; TODO: change this test after adding support of `A v ¬A` ~ `1`.
                                  [(lor a neg-a)
                                   (lor a neg-a)]
 
                                  [(land a f)
                                   f]]]
       
-      ;; TODO: сompare expressions using a special function, rather than using =, since different expressions can mean essentially the same thing, for example (A v B) and (B v A).
+      ;; TODO: сompare expressions using a special function, rather than using =, since different expressions can mean essentially the same thing, for example `A v B` and `B v A`.
       (is (= expected-dnf (dnf expr))))))
 
 (run-tests 'logic.tests)

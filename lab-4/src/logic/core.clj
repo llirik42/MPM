@@ -73,16 +73,26 @@
   (= (first expr) ::impl))
 
 (defn args
-  "Returns arguments of the given expression. For example, if the given expression is (A v B v C), then it will return list of expressions A, B, C."
+  "Returns arguments of the given expression. For example, if the given expression is `A v B v C`, then it will return list of expressions `A`, `B`, `C`."
   [expr]
   (rest expr))
 
 (defn first-arg
-  "Returns the first argument of the given expression. For example, if the given expression is (A v B), then it will return expression A. Function doesn't check whether the expression has arguments or not (expressions with constant and variable types don't have arguments)."
+  "Returns the first argument of the given expression. For example, if the given expression is `A v B`, then it will return expression A. Function doesn't check whether the expression has arguments or not (expressions with constant and variable types don't have arguments)."
   [expr]
   (first (rest expr)))
 
 (defn second-arg
-  "Returns the second argument of the given expression. For example, if the given expression is (A v B), then it will return expression B. Function doesn't check whether the expression has arguments or not (expressions with constant and variable types don't have arguments)."
+  "Returns the second argument of the given expression. For example, if the given expression is `A v B`, then it will return expression B. Function doesn't check whether the expression has arguments or not (expressions with constant and variable types don't have arguments)."
   [expr]
   (second (rest expr)))
+
+(defn unary?
+  "Returns true if the given expression has only one argument. For example: `¬A`."
+  [expr]
+  (== (count (args expr)) 1))
+
+(defn binary?
+  "Returns true if the given expression has only two arguments. For example: `A v B`."
+  [expr]
+  (== (count (args expr)) 2))

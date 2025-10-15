@@ -6,33 +6,33 @@
 
 (def -repr-rules
   (list
-   ;; Handling of constant
+   ;; Handling the constant.
    [const?
     (fn [expr] (if (const-value expr) "1" "0"))]
 
-   ;; Handling of variable
+   ;; Handling the variable.
    [variable?
     (fn [expr] (name (variable-name expr)))]
 
-   ;; Handling of negations
+   ;; Handling the negation.
    [lneg?
     (fn [expr] (str "¬" (repr (first (args expr)))))]
 
-   ;; Handling of conjuction
+   ;; Handling the conjuction.
    [land?
     (fn [expr]
       (let [reprs (map repr (args expr))
             f (fn [r1 r2] (str r1 " & " r2))]
         (str "(" (reduce f reprs) ")")))]
 
-   ;; Handling of disjunction
+   ;; Handling the disjunction.
    [lor?
     (fn [expr]
       (let [reprs (map repr (args expr))
             f (fn [r1 r2] (str r1 " v " r2))]
         (str "(" (reduce f reprs) ")")))]
 
-   ;; Handling of implication
+   ;; Handling the implication.
    [limpl?
     (fn [expr]
       (let [args (args expr)
